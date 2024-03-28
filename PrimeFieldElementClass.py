@@ -5,12 +5,14 @@ class PrimeFieldElement:
     def __init__(self, a, p):
         self.a = a % p
         self.p = p
-        self.u = self._find_unit()
+        self.i = self._find_inverse()
 
     # overload print function
     def __str__(self):
         return f"{self.a} mod {self.p}"
 
+    def __eq__(self, other):
+        return self.a == other.a and self.p == other.p and self.inverse == other.inverse
     # overload add function
     @same_prime_field
     def __add__(self, other):
@@ -54,18 +56,18 @@ class PrimeFieldElement:
         Returns:
             PrimeFieldElement: the result of the division
         """
-        return self.__class__((self.a * other.unit) % self.p, self.p)
+        return self.__class__((self.a * other.inverse) % self.p, self.p)
 
     @property
-    def unit(self):
+    def inverse(self):
         """
         Returns the unit of the element
         Returns:
             int: the unit of the element
         """
-        return self.u
+        return self.i
 
-    def _find_unit(self):
+    def _find_inverse(self):
         """
         find the unit of the element
         The unit of an element a is the element b such that a*b = 1 mod p, to find b we use the extended euclidean algorithm
@@ -80,17 +82,3 @@ class PrimeFieldElement:
 
 
     
-
-    
-
-
-
-p = 2
-
-x = PrimeFieldElement(8, p)
-y = PrimeFieldElement(9, p)
-
-
-z = x - y + x
-
-print(z)
