@@ -1,46 +1,84 @@
-# TODO decide if to use this function or a library
-def xgcd(a,b):
-    if b == 0:
-        if a < 0:
-            return -a, -1, 0
-        return a, 1, 0
-    else:
-        q, r = a // b, a % b
-        d, s, t = xgcd(b, r)
-        return d, t, s - q * t
+from utils import xgcd, same_prime_field
 
 
-# TODO decorator for checking that comparison between two different prime field elements have the same prime
-# TODO add edge cases
 class PrimeFieldElement:
     def __init__(self, a, p):
         self.a = a % p
         self.p = p
-    
+        self.u = self._find_unit()
+
     # overload print function
     def __str__(self):
-        return str(self.a)
-    
+        return f"{self.a} mod {self.p}"
+
     # overload add function
+    @same_prime_field
     def __add__(self, other):
+        """
+        Addition of two prime field elements
+        Args:
+            other (PrimeFieldElement): the element to add
+        Returns:
+            PrimeFieldElement: the result of the addition
+        """
         return self.__class__((self.a + other.a) % self.p, self.p)
-    
-    # overload subtraction function
+
+    @same_prime_field
     def __sub__(self, other):
+        """
+        Subtraction of two prime field elements
+        Args:
+            other (PrimeFieldElement): the element to subtract
+        Returns:
+            PrimeFieldElement: the result of the subtraction
+        """
         return self.__class__((self.a - other.a) % self.p, self.p)
-    
+
+    @same_prime_field
     def __mul__(self, other):
+        """
+        Multiplication of two prime field elements
+        Args:
+            other (PrimeFieldElement): the element to multiply by
+        Returns:
+            PrimeFieldElement: the result of the multiplication
+        """
         return self.__class__((self.a * other.a) % self.p, self.p)
 
-    # TODO call the extended euclidean algorithm
-    # TODO make sure the element has inverse (means its not equal to 0 modulu p)
-    @property
-    def inverse(self):
-        pass
-    
-    # TODO validate the other has inverse so we wont get an error
+    @same_prime_field
     def __truediv__(self, other):
-        return self.__class__((self.a * other.inverse) % self.p)
+        """
+        Division of two prime field elements
+        Args:
+            other (PrimeFieldElement): the element to divide by
+        Returns:
+            PrimeFieldElement: the result of the division
+        """
+        return self.__class__((self.a * other.unit) % self.p, self.p)
+
+    @property
+    def unit(self):
+        """
+        Returns the unit of the element
+        Returns:
+            int: the unit of the element
+        """
+        return self.u
+
+    def _find_unit(self):
+        """
+        find the unit of the element
+        The unit of an element a is the element b such that a*b = 1 mod p, to find b we use the extended euclidean algorithm
+        Returns:
+            int: the unit of the element
+        """
+        d, s, t = xgcd(self.a, self.p)
+        if d != 1:
+            raise ValueError("Element does not have an unit")
+        return s % self.p
+    
+
+
     
 
     
