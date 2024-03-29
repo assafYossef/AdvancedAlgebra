@@ -1,5 +1,7 @@
 import numpy as np
 
+from PrimeFieldElementClass import PrimeFieldElement
+
 from FiniteFieldClass import FiniteField
 
 #TODO build GLn matrice - > open EmbededToGln.txt to find the steps to do it | Should we do it here or in FiniteFieldClass?
