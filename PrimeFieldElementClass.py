@@ -13,7 +13,7 @@ def xgcd(a: int,b: int) -> int:
 
 # TODO add edge cases
 class PrimeFieldElement:
-    def __init__(self, a, p):
+    def __init__(self, a: int, p: int):
         if a >= p or a < 0:
             raise Exception(f"{a} is not in F of {p}")
         
@@ -59,7 +59,7 @@ class PrimeFieldElement:
     
     @validate_other_p
     def __mul__(self, other: "PrimeFieldElement") -> "PrimeFieldElement":
-        return self.__class__((self.a * other.a) % self.p, self.p)
+        return self.__class__((self.a * other.a) % self.p, self.p)  
 
     def __pow__(self, pow_number: int) -> "PrimeFieldElement":        
         is_negative = pow_number < 0
