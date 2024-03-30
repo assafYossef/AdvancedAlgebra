@@ -46,6 +46,12 @@ class PrimeFieldElement:
     # overload print function
     def __str__(self):
         return str(self.a)
+
+    def __format__(self, __format_spec: str) -> str:
+        return str(self.a)
+
+    def __eq__(self, other) -> bool:
+        return self.a == other
     
     # overload add function
     @validate_other_p

@@ -1,6 +1,8 @@
+from itertools import product
 import numpy as np
 
 from PrimeFieldElementClass import PrimeFieldElement
+from Polynom import Polynom
 
 class FiniteField:
     def __init__(self, p: int, f: np.ndarray):
@@ -18,11 +20,17 @@ class FiniteField:
             raise Exception("polynom is reducible over Fp")
         else:
             # polynom is valid over Fp
-            self.f = polynom
+            self.f = Polynom(poly=polynom)
         
-        self.field_elements = []
-        self.field_primitives = []
-        self.field_generators = []
+        self._field_elements = []
+        self._field_primitives = []
+        self._field_generators = []
+        self._field_general_element = []
+
+        for pow_i in range(len(self.f) - 1):
+            self._field_general_element.append(f"a{pow_i}")
+        
+        self._field_general_element = Polynom(poly=self._field_general_element)
 
     def _check_that_f_is_irreducible(self, polynom: np.ndarray) -> bool:
         # if the polynom degree is greater than 3, we need to belive them it's true
@@ -53,27 +61,13 @@ class FiniteField:
                 return False
 
         return True
+    
+    def __format__(self, __format_spec: str) -> str:
+        return f"F{self.p}[X]/<{self.irreducible_poly}>"
 
     @property
     def irreducible_poly(self):
-        poly = []
-        for pow_i in range(len(self.f) - 1, -1, -1):
-            if pow_i == 0:
-                poly.append(str(self.f[pow_i].a))
-            elif self.f[pow_i].a == 0:
-                continue
-            elif self.f[pow_i].a == 1:
-                if pow_i == 1:
-                    poly.append("X")
-                else:
-                    poly.append(f"X^{pow_i}")
-            else:
-                if pow_i == 1:
-                    poly.append(f"{self.f[pow_i].a}*X")
-                else:
-                    poly.append(f"{self.f[pow_i].a}*X^{pow_i}")
-
-        return " + ".join(poly)
+        return self.f.str_rep
 
     # find generators over extended field
     # TODO run on all extended field elements
@@ -82,15 +76,27 @@ class FiniteField:
     def generators(self):
         pass
 
+    # represent the genral element that belongs to this field
+    @property
+    def general_element(self):
+       return self._field_general_element.str_rep
+    
     # find all the elements in the extended field
-    # TODO find a solution for f(x) = 0 mod(f(x))
-    # TODO calculate its pow from 0 to r-1 modulu p | where r is the degree of f(x)
     @property
     def elements(self):
-        pass
+        if len(self._field_elements) == 0:            
+            n = self.p ** len(self.f)
+            items = list(product(range(0, self.p), repeat=len(self._field_general_element)))
+            self._field_elements = np.ndarray((len(items,),), dtype=Polynom)
+
+            for index in range(len(items)):
+                self._field_elements[index] = Polynom(items[index])
+    
+        return self._field_elements
+
 
     # find all the primitives in the extended field
-    # TODO - How do we find primitives? 
+    # TODO - How do we find primitives? - their order is the size of the field minus 1
     @property
     def primitives(self):
         pass
@@ -98,6 +104,11 @@ class FiniteField:
     # find GLn matrice
     # TODO find the
 
-p = 47
-extended_field = FiniteField(p=p, f=np.array([5, 40, 8, 0, 1]))
-print(extended_field.irreducible_poly)
+# p = 2
+# extended_field = FiniteField(p=p, f=np.array([1, 1, 0, 0, 1]))
+# print(extended_field.irreducible_poly)
+# print(extended_field.general_element)
+# for element in extended_field.elements:
+#     print(element)
+
+# print(len(extended_field.elements))
