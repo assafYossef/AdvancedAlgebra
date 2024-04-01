@@ -145,7 +145,7 @@ class FiniteField(object):
         """
         generators = []
         for element in self.elements:
-            if element.order == (self.p ** (len(self.f) - 1) - 1): # -1 because p^r-1 is the order of the multiplicative group
+            if element.order == (self.order - 1): # -1 because p^r-1 is the order of the multiplicative group
                 generators.append(element)
         return generators
 
@@ -315,7 +315,7 @@ class FiniteFieldElement(object):
         First we check that either the element or the other element is not 0, since 0 is not part of the \
         multiplicative group so multiplication is not defined.
         Then we calculate the multiplication of the element and the other element by multiplying the gln_a of the element \
-        and the gln_a of the other element and take the result modulo p.
+        and the gln_a of the other element and take the result modulo p, the first column vector is the element vector.
 
         Args:
             other (FiniteFieldElement): the element to multiply by
@@ -333,6 +333,7 @@ class FiniteFieldElement(object):
         multiplicative group so division is not defined.
         Then we calculate the inverse of the other element and multiply it by the element, the inverse is used by \
         inverting the gln_a of the other element and multiply it by the gln_a of the element and take the result modulo p.
+        the first column vector is the element vector.
         Args:
             other (FiniteFieldElement): the element to divide by
 
