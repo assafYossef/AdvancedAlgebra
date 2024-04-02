@@ -31,7 +31,7 @@ def zero_element_check(func):
     def wrapper(self, other):
         if np.all(self.a == 0) or np.all(other.a == 0):
             raise ValueError("Zero is not part of the multiplicative group, so it cannot be used in this operation")
-        return func(self)
+        return func(self, other)
     return wrapper
 
 
