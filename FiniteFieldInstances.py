@@ -9,6 +9,7 @@ class FiniteField(object):
     polynomial f(x) used for the extension.
     l = F_p^n[x]/<f(x)>
     """
+
     def __init__(self, p, f: np.ndarray, representation: str = "polynomial"):
         assert representation in ["polynomial", "vector", "matrix"], "Invalid representation"
         self._repr = representation
@@ -145,7 +146,7 @@ class FiniteField(object):
         """
         generators = []
         for element in self.elements:
-            if element.order == (self.order - 1): # -1 because p^r-1 is the order of the multiplicative group
+            if element.is_generator():  # -1 because p^r-1 is the order of the multiplicative group
                 generators.append(element)
         return generators
 
@@ -159,11 +160,12 @@ class FiniteField(object):
             Dict[Tuple[np.ndarray], FiniteFieldElement]: a dictionary of all the elements in the field where the key is the vector representation of the element
 
         """
-        n = len(self.f)-1
+        n = len(self.f) - 1
         coefficients = np.arange(self.p)
         coefficient_combinations = np.meshgrid(*([coefficients] * n), indexing='ij')
         coefficient_permutations = np.stack(coefficient_combinations, axis=-1).reshape(-1, n)
-        elements = {tuple(coefficient[::-1]): FiniteFieldElement(coefficient[::-1], self, representation=self._repr) for coefficient in
+        elements = {tuple(coefficient[::-1]): FiniteFieldElement(coefficient[::-1], self, representation=self._repr) for
+                    coefficient in
                     coefficient_permutations}
         return elements
 
@@ -286,6 +288,16 @@ class FiniteFieldElement(object):
         """
         self._repr = value
 
+    @property
+    def dimension(self) -> int:
+        """
+        Get the dimension of the element
+
+        Returns:
+            int: the dimension of the element
+        """
+        return len(self.a)
+
     def __add__(self, other):
         """
         Calculate the addition of the element by another element, the addition is simple vector addition modulo p
@@ -295,7 +307,7 @@ class FiniteFieldElement(object):
         Returns:
             FiniteFieldElement: the result of the addition
         """
-        return self.__class__((self.a + other.a) % self.field.p, self.field)
+        return self.__class__((self.a + other.a) % self.field.p, self.field, representation=self._repr)
 
     def __sub__(self, other):
         """
@@ -306,7 +318,7 @@ class FiniteFieldElement(object):
         Returns:
             FiniteFieldElement: the result of the subtraction
         """
-        return self.__class__((self.a - other.a) % self.field.p, self.field)
+        return self.__class__((self.a - other.a) % self.field.p, self.field, representation=self._repr)
 
     @zero_element_check
     def __mul__(self, other):
@@ -323,7 +335,7 @@ class FiniteFieldElement(object):
         Returns:
             FiniteFieldElement: the result of the multiplication
         """
-        return self.__class__(np.matmul(self.gln_a, other.gln_a)[:,0] % self.field.p, self.field)
+        return self.__class__(np.matmul(self.gln_a, other.gln_a)[:, 0] % self.field.p, self.field, representation=self._repr)
 
     @zero_element_check
     def __truediv__(self, other):
@@ -340,8 +352,77 @@ class FiniteFieldElement(object):
         Returns:
             FiniteFieldElement: the result of the division
         """
-        inv = np.linalg.inv(other.gln_a)
-        return self.__class__(np.matmul(self.gln_a, inv)[:,0] % self.field.p, self.field)
+        inverse = other._get_inverse()
+        return self * inverse
+
+    def __pow__(self, power):
+        """
+        Built-in function for exponentiation of the element by a power
+        For 0 power, the result is the identity element 1, if its negative we first get the inverse of the element \
+        and then calculate the exponentiation by squaring of the inverse element.
+        For positive power, we calculate the exponentiation by squaring of the element.
+        :param power:
+        :return:
+        """
+        if power == 0:
+            return self.__class__(np.array([1] + [0] * (self.dimension - 1)), self.field, representation=self._repr)
+        if power > 0:
+            res, element_order = self._exponentiation_by_squaring_with_order(self, power)
+            if self.ord is None:
+                self.ord = element_order
+            return res
+        else:
+            inverse = self._get_inverse()
+            res, element_order = self._exponentiation_by_squaring_with_order(inverse, -power)
+            if self.ord is None:
+                self.ord = element_order
+            return res
+
+    @staticmethod
+    def _exponentiation_by_squaring_with_order(a, n):
+        """
+        This function have 2 purposes:
+        first calculate the exponentiation of the element a by n using the exponentiation by squaring algorithm.
+        secondly, we use the fact that if a^n = 1 then the order of a divides n, so we can try and calculate the order \
+         of the element when calculating the exponentiation by squaring.
+         This is true from lagrange theorem, that for H a subgroup of G, the order of any element in G divides \
+            the order of the group G. For all g in G, |<g>| | |G|
+        In our case the multiplicative group of Fp* = Fp - {0} is a subgroup of the multiplicative group l* where l \
+        is the extended field l = Fp[x]/<f(x)>. So for any element a in l*, O(a) | O(l*)
+
+        Args:
+            a (FiniteFieldElement): the element to exponentiate
+            n (int): the power to exponentiate the element by
+
+        Returns:
+            FiniteFieldElement: the result of the exponentiation
+            int: the order of the element, None if the order couldn't be found for the specific n
+        """
+        if n == 0:
+            return 1, None
+        if n == 1:
+            if a.is_identity_of_multiplication():
+                return a, 1
+            return a, None
+        res, element_order = FiniteFieldElement._exponentiation_by_squaring_with_order(a, n // 2)
+        if n % 2 == 0:
+            res = res * res
+        else:
+            res = a * res * res
+        if res.is_identity_of_multiplication() and element_order is None:
+            element_order = n
+        return res, element_order
+
+    def _get_inverse(self):
+        """
+        Get the inverse of the element
+        The inverse of the element is the element that when multiplied by the element gives the identity element 1
+
+        Returns:
+            FiniteFieldElement: the inverse of the element
+        """
+        inv = np.linalg.inv(self.gln_a)
+        return self.__class__(inv[:, 0] % self.field.p, self.field, representation=self._repr)
 
     def as_vector(self) -> None:
         """
@@ -397,16 +478,33 @@ class FiniteFieldElement(object):
         Returns:
             int: the multiplicative order of the element, None if the element is 0
         """
+        if self.ord is not None:
+            return self.ord
         if self.gln_a is None:
             return None
-        order = 1
-        total_mul = self.gln_a
-        while True:
-            total_mul = np.matmul(total_mul, self.gln_a) % self.field.p
-            order += 1
-            if np.array_equal(total_mul, np.eye(len(self.gln_a))):
-                break
-        return order
+        _, element_order = self._exponentiation_by_squaring_with_order(self, self.field.order - 1)
+        return element_order
+
+    def is_generator(self):
+        """
+        Check if the element is a generator in the field
+        A generator element is an element whose order is equal to the order of the multiplicative group
+        In other words, a generator element is an element whose powers generate all the elements in the field.
+
+        Returns:
+            bool: True if the element is a generator, False otherwise
+        """
+        return self.order == (self.field.order - 1)
+
+    def is_identity_of_multiplication(self):
+        """
+        Check if the element is the identity element of the multiplication operation
+        The identity element of the multiplication operation is the element 1
+
+        Returns:
+            bool: True if the element is the identity element, False otherwise
+        """
+        return np.all(self.a == np.array([1] + [0] * (self.dimension - 1)))
 
     @staticmethod
     def check_that_element_is_in_field(element, field) -> bool:
@@ -424,7 +522,7 @@ class FiniteFieldElement(object):
         """
         return len(field.f) > len(element)
 
-    def embed_in_gln(self) -> Union[np.ndarray,None]:
+    def embed_in_gln(self) -> Union[np.ndarray, None]:
         """
         Embed the element in GL(n, p) where n is the degree of the extension field.
         Methodology: for an element a in the field, we calculate the multiplication of a by x^i for i in range(n-1)
