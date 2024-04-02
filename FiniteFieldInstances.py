@@ -552,4 +552,4 @@ class FiniteFieldElement(object):
                 v = x_j_co * x_j
                 a_mul_basis_valid += v
             emmbed_matrix[:, i] = a_mul_basis_valid
-        return emmbed_matrix % p
+        return emmbed_matrix % self.field.p
