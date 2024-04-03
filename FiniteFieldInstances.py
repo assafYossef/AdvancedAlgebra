@@ -411,6 +411,9 @@ class FiniteFieldElement(object):
                 self.ord = element_order
             return res
 
+    def __hash__(self):
+        return hash(tuple(self.a))
+
     @staticmethod
     def _exponentiation_by_squaring_with_order(a, n):
         """
