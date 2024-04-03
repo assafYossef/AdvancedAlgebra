@@ -10,6 +10,9 @@ class PrimeFieldElement:
     def __str__(self):
         return f"{self.a} mod {self.p}"
 
+    def __repr__(self):
+        return f"PrimeFieldElement(value= {self.a},prime= {self.p})"
+
     @same_prime_field
     def __eq__(self, other):
         return self.a == other.a and self.p == other.p and self.inverse == other.inverse
@@ -75,6 +78,9 @@ class PrimeFieldElement:
         The unit of an element a is the element b such that a*b = 1 mod p, to find b we use the extended euclidean algorithm
         Returns:
             int: the unit of the element
+
+        Raises:
+            ValueError: if the element does not have an inverse
         """
         if self.a == 0:
             return 0
