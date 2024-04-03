@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional, Tuple
 import numpy as np
 from galwa.utils import valid_repr, refactor_polynom_terms, pad_element, zero_element_check, same_field, invert_matrix
 from galwa.utils import xgcd, same_prime_field
@@ -6,81 +6,136 @@ from galwa.utils import xgcd, same_prime_field
 
 class PrimeFieldElement:
     """
-    PrimeFieldElement class represents an element in a prime field of the form F_p where p is a prime number.
+    PrimeFieldElement class represents an element in a prime field :math:`F_{p}` where p is a prime number.
     The element represent the value a mod p
+
+    Example:
+
+    >>> from galwa import PrimeFieldElement
+    >>> a = PrimeFieldElement(3, 5)
+    >>> a
+    PrimeFieldElement(value= 3,prime= 5)
+    >>> print(a)
+    3 mod 5
+    >>> b = PrimeFieldElement(4, 5)
+    >>> a + b
+    PrimeFieldElement(value= 2,prime= 5)
+    >>> a - b
+    PrimeFieldElement(value= 4,prime= 5)
+    >>> a * b
+    PrimeFieldElement(value= 2,prime= 5)
+    >>> a / b
+    PrimeFieldElement(value= 2,prime= 5)
+    >>> a ** 2
+    PrimeFieldElement(value= 4,prime= 5)
+    >>> a**-1
+    PrimeFieldElement(value= 2,prime= 5)
+    >>> a.inverse
+    PrimeFieldElement(value= 2,prime= 5)
+    >>> a == b
+    False
     """
     def __init__(self, a: int, p: int):
         """
-        Initialize the PrimeFieldElement class
+        Initialize the PrimeFieldElement class.
 
         Args:
-            a (int): the element in the prime field
-            p (int): the prime number for the prime field
+            a (int): the element in the prime field.
+            p (int): the prime number for the prime field.
         """
         self.a = a % p
         self.p = p
         self.i = self._find_inverse()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
-        String builtin function for PrimeFieldElement
+        String builtin function for PrimeFieldElement.
 
         Returns:
-            str: the string representation of the element
-
-        Example:
-        PrimeFieldElement(3, 5)
+            str: the string representation of the element.
         """
         return f"{self.a} mod {self.p}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"PrimeFieldElement(value= {self.a},prime= {self.p})"
 
     @same_prime_field
     def __eq__(self, other):
+        """
+        Check if two prime field elements are equal.
+
+        Args:
+            other (PrimeFieldElement): the element to compare to.
+
+        Returns:
+            bool: True if the elements are equal, False otherwise.
+
+        Raises:
+            AssertionError: if the elements are not in the same prime field.
+        """
         return self.a == other.a and self.p == other.p and self.inverse == other.inverse
 
     @same_prime_field
     def __add__(self, other):
         """
-        Addition of two prime field elements
+        Addition of two prime field elements.
+
         Args:
-            other (PrimeFieldElement): the element to add
+            other (PrimeFieldElement): the element to add.
+
         Returns:
-            PrimeFieldElement: the result of the addition
+            PrimeFieldElement: the result of the addition.
+
+        Raises:
+            AssertionError: if the elements are not in the same prime field.
         """
         return self.__class__((self.a + other.a) % self.p, self.p)
 
     @same_prime_field
     def __sub__(self, other):
         """
-        Subtraction of two prime field elements
+        Subtraction of two prime field elements.
+
         Args:
-            other (PrimeFieldElement): the element to subtract
+            other (PrimeFieldElement): the element to subtract.
+
         Returns:
-            PrimeFieldElement: the result of the subtraction
+            PrimeFieldElement: the result of the subtraction.
+
+        Raises:
+            AssertionError: if the elements are not in the same prime field.
         """
         return self.__class__((self.a - other.a) % self.p, self.p)
 
     @same_prime_field
     def __mul__(self, other):
         """
-        Multiplication of two prime field elements
+        Multiplication of two prime field elements.
+
         Args:
-            other (PrimeFieldElement): the element to multiply by
+            other (PrimeFieldElement): the element to multiply by.
+
         Returns:
-            PrimeFieldElement: the result of the multiplication
+            PrimeFieldElement: the result of the multiplication.
+
+        Raises:
+            AssertionError: if the elements are not in the same prime field.
         """
         return self.__class__((self.a * other.a) % self.p, self.p)
 
     @same_prime_field
     def __truediv__(self, other):
         """
-        Division of two prime field elements
+        Division of two prime field elements.
+
         Args:
-            other (PrimeFieldElement): the element to divide by
+            other (PrimeFieldElement): the element to divide by.
+
         Returns:
-            PrimeFieldElement: the result of the division
+            PrimeFieldElement: the result of the division.
+
+        Raises:
+            AssertionError: if the elements are not in the same prime field.
         """
         if other.a == 0:
             raise ValueError("Division by zero")
@@ -88,11 +143,16 @@ class PrimeFieldElement:
 
     def __pow__(self, n):
         """
-        Exponentiation of a prime field element
+        Exponentiation of a prime field element.
+
+        .. note::
+          For this class we are NOT using exponentiation by squaring, since the built-in pow function is faster.
+
         Args:
-            n (int): the exponent
+            n (int): the exponent.
+
         Returns:
-            PrimeFieldElement: the result of the exponentiation
+            PrimeFieldElement: the result of the exponentiation.
         """
         if n == 0:
             return self.__class__(1, self.p)
@@ -103,21 +163,35 @@ class PrimeFieldElement:
     @property
     def inverse(self):
         """
-        Returns the unit of the element
+        Returns the inverse of the element. (for multiplicative group)
+
+        The inverse is being defined as the element b such that :math:`a*b = 1 mod p`.
+
         Returns:
-            int: the unit of the element
+            PrimeFieldElement: the inverse of the element.
+
+        Example:
+
+            >>> from galwa import PrimeFieldElement
+            >>> a = PrimeFieldElement(3, 5)
+            >>> a.inverse
+            PrimeFieldElement(value= 2,prime= 5)
         """
         return PrimeFieldElement(self.i, self.p)
 
     def _find_inverse(self):
         """
-        find the unit of the element
-        The unit of an element a is the element b such that a*b = 1 mod p, to find b we use the extended euclidean algorithm
+        Finds the inverse of the element. (for multiplicative group)
+
+
+        The inverse of an element a is the element b such that :math:`a*b = 1 mod p`, to find b we are using \
+         the extended Euclidean algorithm.
+
         Returns:
-            int: the unit of the element
+            int: the inverse of the element.
 
         Raises:
-            ValueError: if the element does not have an inverse
+            ValueError: if the element does not have an inverse.
         """
         if self.a == 0:
             return 0
@@ -129,23 +203,35 @@ class PrimeFieldElement:
 
 class FiniteFieldElement(object):
     """
-    FiniteFieldElement class represents an element in an extension field of the form F_p^n where p is a prime number \
-     and n is the degree of polynomial f(x) used for the extension.
-     element that belongs to l = F_p^n[x]/<f(x)>
+    FiniteFieldElement class represents an element in an extension :math:`F_{p^n}` where :math:`p` is a prime number \
+    and :math:`n` is the degree of polynomial :math:`f(x)` used for the extension.
+    In other words, a class to represent an element :math:`a \in l = F_{p^n}[x]/<f(x)>`
+
+    Example:
+
+    >>> from galwa import FiniteField, FiniteFieldElement
+    >>> import numpy as np
+    >>> f = np.array([1, 1, 0, 1])
+    >>> p = 2
+    >>> field = FiniteField(p, f)
+    >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+    >>> a
+    FiniteFieldElement(1 + x², f(x)= 1 + x + x³, p=2)
     """
 
-    def __init__(self, a: np.ndarray, field, representation: str = "polynomial"):
+    def __init__(self, a: np.ndarray, field: "FiniteField", representation: Optional[str] = "polynomial"):
         """
-        Initialize the FiniteFieldElement class
+        Initialize the FiniteFieldElement class.
 
         Args:
-            a (np.ndarray): the element in the field
-            field (FiniteField): the field the element belongs to
-            representation (str): the representation of the element - polynomial, vector, matrix
+            a (np.ndarray): the element in the field.
+            field (FiniteField): the field the element belongs to.
+            representation Optional[str]: the representation of the element (polynomial, vector, matrix), default is polynomial.
 
         Raises:
-            AssertionError: if the representation is invalid or the element is not in the field
+            AssertionError: if the representation is invalid or the element is not in the field or wrong type.
         """
+        assert isinstance(a, np.ndarray), "Element must be a numpy array"
         assert representation in ["polynomial", "vector", "matrix"], "Invalid representation"
         assert self.check_that_element_is_in_field(a, field), "Element is not in the field"
         self.field = field
@@ -157,11 +243,21 @@ class FiniteFieldElement(object):
         self._repr = representation
 
     def __eq__(self, other):
+        """
+        Check if two finite field elements are equal.
+
+        Args:
+            other (FiniteFieldElement): the element to compare to.
+
+        Returns:
+            bool: True if the elements are equal, False otherwise.
+        """
         return np.array_equal(self.a, other.a) and self.field == other.field
 
     def __str__(self):
         """
-        String builtin function for FiniteFieldElement
+        String builtin function for FiniteFieldElement.
+
         Returns:
             str: the string representation of the element by the representation type (polynomial, vector, matrix)
         """
@@ -174,7 +270,8 @@ class FiniteFieldElement(object):
 
     def __repr__(self) -> str:
         """
-        Representation builtin function for FiniteFieldElement
+        Representation builtin function for FiniteFieldElement.
+
         Returns:
             str: the representation of the element by the representation type (polynomial, vector, matrix)
         """
@@ -193,7 +290,18 @@ class FiniteFieldElement(object):
         Get the representation of the element (polynomial, vector, matrix)
 
         Returns:
-            str: the representation of the element
+            str: the representation of the element.
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> a.representation
+            'polynomial'
         """
         return self._repr
 
@@ -201,20 +309,24 @@ class FiniteFieldElement(object):
     @valid_repr
     def representation(self, value) -> None:
         """
-        Set the representation of the element
-        Valid representations are: polynomial, vector, matrix
+        Set the representation of the element.
+        Valid representations are: "polynomial", "vector", "matrix".
+
         Args:
-            value (str): the representation to set
+            value (str): the representation to set.
 
         Returns:
             None
+
+        Raises:
+            ValueError: if the representation is invalid.
         """
         self._repr = value
 
     @property
     def dimension(self) -> int:
         """
-        Get the dimension of the element
+        Get the dimension of the element. (vector dimension)
 
         Returns:
             int: the dimension of the element
@@ -222,74 +334,171 @@ class FiniteFieldElement(object):
         return len(self.a)
 
     @same_field
-    def __add__(self, other):
+    def __add__(self, other) -> "FiniteFieldElement":
         """
         Calculate the addition of the element by another element, the addition is simple vector addition modulo p
+
+        .. note::
+         We dont use PrimeFieldElement for the addition since it is much easier to make vector addition and take \n
+          the result modulo p. The result of addition of two integer will always be integer.
+
         Args:
-            other (FiniteFieldElement): the element to add
+            other (FiniteFieldElement): the element to add.
 
         Returns:
-            FiniteFieldElement: the result of the addition
+            FiniteFieldElement: the result of the addition.
+
+        Raises:
+            AssertionError: if the elements are not in the same field.
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> b = FiniteFieldElement(np.array([1, 1, 0]), field)
+            >>> a + b
+            FiniteFieldElement(x + x², f(x)= 1 + x + x³, p=2)
         """
         return self.__class__((self.a + other.a) % self.field.p, self.field, representation=self._repr)
 
     @same_field
-    def __sub__(self, other):
+    def __sub__(self, other) -> "FiniteFieldElement":
         """
         Calculate the subtraction of the element by another element, the subtraction is simple vector subtraction modulo p
+
+        .. note::
+            We dont use PrimeFieldElement for the subtraction since it is much easier to make vector subtraction and take \n
+            the result modulo p. The result of subtraction of two integer will always be integer.
+
         Args:
-            other (FiniteFieldElement): the element to subtract by
+            other (FiniteFieldElement): the element to subtract by.
 
         Returns:
-            FiniteFieldElement: the result of the subtraction
+            FiniteFieldElement: the result of the subtraction.
+
+        Raises:
+            AssertionError: if the elements are not in the same field.
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> b = FiniteFieldElement(np.array([1, 1, 0]), field)
+            >>> a - b
+            FiniteFieldElement(x + x², f(x)= 1 + x + x³, p=2)
         """
         return self.__class__((self.a - other.a) % self.field.p, self.field, representation=self._repr)
 
     @same_field
     @zero_element_check
-    def __mul__(self, other):
+    def __mul__(self, other) -> "FiniteFieldElement":
         """
         Calculate the multiplication of the element by another element
         First we check that either the element or the other element is not 0, since 0 is not part of the \
-        multiplicative group so multiplication is not defined.
+        multiplicative group so the multiplication is not defined.
         Then we calculate the multiplication of the element and the other element by multiplying the gln_a of the element \
         and the gln_a of the other element and take the result modulo p, the first column vector is the element vector.
 
+        .. note::
+         We dont use PrimeFieldElement for the multiplication since it is much easier to make matrix multiplication and take \n
+            the result modulo p. The result of multiplication of two integer will always be integer.
+
         Args:
-            other (FiniteFieldElement): the element to multiply by
+            other (FiniteFieldElement): the element to multiply by.
 
         Returns:
-            FiniteFieldElement: the result of the multiplication
+            FiniteFieldElement: the result of the multiplication.
+
+        Raises:
+            AssertionError: if the elements are not in the same field. or if the element is 0
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> b = FiniteFieldElement(np.array([1, 1, 0]), field)
+            >>> a * b
+            FiniteFieldElement(x², f(x)= 1 + x + x³, p=2)
         """
         return self.__class__(np.matmul(self.gln_a, other.gln_a)[:, 0] % self.field.p, self.field, representation=self._repr)
 
     @same_field
     @zero_element_check
-    def __truediv__(self, other):
+    def __truediv__(self, other) -> "FiniteFieldElement":
         """
-        Calculate the division of the element by another element
+        Calculate the division of the element by another element.
         First we check that either the element or the other element is not 0, since 0 is not part of the \
         multiplicative group so division is not defined.
         Then we calculate the inverse of the other element and multiply it by the element, the inverse is used by \
-        inverting the gln_a of the other element and multiply it by the gln_a of the element and take the result modulo p.
+        inverting the gln_a of the other element and multiply it by the gln_a of the element.
         the first column vector is the element vector.
+
+        .. note::
+        This is the only operation that we use PrimeFieldElement, since regular matrix inverse can return float numbers \
+        We must use PrimeFieldElement to perform the division between two elements.
+
         Args:
-            other (FiniteFieldElement): the element to divide by
+            other (FiniteFieldElement): the element to divide by.
 
         Returns:
-            FiniteFieldElement: the result of the division
+            FiniteFieldElement: the result of the division.
+
+        Raises:
+            AssertionError: if the elements are not in the same field. or if the element is 0.
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> b = FiniteFieldElement(np.array([1, 1, 0]), field)
+            >>> a / b
+            FiniteFieldElement(1 + x, f(x)= 1 + x + x³, p=2)
         """
         inverse = other._get_inverse()
         return self * inverse
 
-    def __pow__(self, power):
+    def __pow__(self, power) -> "FiniteFieldElement":
         """
         Built-in function for exponentiation of the element by a power
-        For 0 power, the result is the identity element 1, if its negative we first get the inverse of the element \
+        For 0 power, the result is the identity element 1.
+
+        If its negative we first get the inverse of the element \
         and then calculate the exponentiation by squaring of the inverse element.
+
         For positive power, we calculate the exponentiation by squaring of the element.
-        :param power:
-        :return:
+
+        Args:
+            power (int): the power to exponentiate the element by.
+
+        Returns:
+            FiniteFieldElement: the result of the exponentiation.
+
+        Example:
+
+                >>> from galwa import FiniteField, FiniteFieldElement
+                >>> import numpy as np
+                >>> f = np.array([1, 1, 0, 1])
+                >>> p = 2
+                >>> field = FiniteField(p, f)
+                >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+                >>> a ** 2
+                FiniteFieldElement(1 + x + x², f(x)= 1 + x + x³, p=2)
         """
         if power == 0:
             return self.__class__(np.array([1] + [0] * (self.dimension - 1)), self.field, representation=self._repr)
@@ -306,27 +515,39 @@ class FiniteFieldElement(object):
             return res
 
     def __hash__(self):
+        """
+        Hash builtin function, so we hash an element in a set or a dictionary.
+
+        Returns:
+            hash: the hash of the element
+        """
         return hash(tuple(self.a))
 
     @staticmethod
-    def _exponentiation_by_squaring_with_order(a, n):
+    def _exponentiation_by_squaring_with_order(a, n) -> Tuple["FiniteFieldElement", Optional[int]]:
         """
         This function have 2 purposes:
-        first calculate the exponentiation of the element a by n using the exponentiation by squaring algorithm.
-        secondly, we use the fact that if a^n = 1 then the order of a divides n, so we can try and calculate the order \
+        first calculate the exponentiation of the element :math:`a^n` using the exponentiation by squaring algorithm.
+
+
+        Secondly, we use the fact that if :math:`a^n = 1`, then the order of :math:`a` divides :math:`n`, so we can try and calculate the order \
          of the element when calculating the exponentiation by squaring.
-         This is true from lagrange theorem, that for H a subgroup of G, the order of any element in G divides \
-            the order of the group G. For all g in G, |<g>| | |G|
-        In our case the multiplicative group of Fp* = Fp - {0} is a subgroup of the multiplicative group l* where l \
-        is the extended field l = Fp[x]/<f(x)>. So for any element a in l*, O(a) | O(l*)
+
+        This is true from lagrange theorem, that for :math:`H` a subgroup of :math:`G`, the order of any element\
+        in :math:`G` divides \
+        the order of the group :math:`G`. That is true for all :math:`g \in G , |<g>| | |G|`
+
+
+        In our case the multiplicative group of :math:`F_{p}^x = F_{p} - \{0\}` is a subgroup of the multiplicative group :math:`l^x` where :math:`l` \
+        is the extended field :math:`l = F_{p}[x]/<f(x)>` . So for  all :math:`a \in l^x, O(a) | O(l^x)`
 
         Args:
-            a (FiniteFieldElement): the element to exponentiate
-            n (int): the power to exponentiate the element by
+            a (FiniteFieldElement): the element to exponentiate.
+            n (int): the power to exponentiate the element by.
 
         Returns:
-            FiniteFieldElement: the result of the exponentiation
-            int: the order of the element, None if the order couldn't be found for the specific n
+            FiniteFieldElement: the result of the exponentiation.
+            int: the order of the element, None if the order couldn't be found for the specific n.
         """
         if n == 0:
             return 1, None
@@ -343,10 +564,14 @@ class FiniteFieldElement(object):
             element_order = n
         return res, element_order
 
-    def _get_inverse(self):
+    def _get_inverse(self) -> "FiniteFieldElement":
         """
-        Get the inverse of the element
+        Get the inverse of the element (for multiplicative group)
         The inverse of the element is the element that when multiplied by the element gives the identity element 1
+
+        .. note::
+            This is the only operation that we use PrimeFieldElement, since regular matrix inverse can return float numbers. \
+            We must use PrimeFieldElement to perform the division between two elements.
 
         Returns:
             FiniteFieldElement: the inverse of the element
@@ -358,44 +583,97 @@ class FiniteFieldElement(object):
 
     def as_vector(self) -> None:
         """
-        Change the representation of the element to vector
-        So once printing the element, it will be printed as a vector
+        Change sthe representation of the element to vector.
+        So once printing the element, it will be printed as a vector.
 
         Returns:
             None
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> a.as_vector()
+            >>> a
+            FiniteFieldElement([1 0 1], f(x) = [1 1 0 1] p=2)
+            >>> print(a)
+            [1 0 1]
         """
         self.representation = "vector"
 
     def as_matrix(self) -> None:
         """
-        Change the representation of the element to matrix
-        So once printing the element, it will be printed as a matrix
+        Changes the representation of the element to matrix.
+        So once printing the element, it will be printed as a matrix.
 
         Returns:
             None
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> a.as_matrix()
+            >>> a
+            FiniteFieldElement([[1 0 1]
+                                [1 0 0]
+                                [0 1 0]], f(x) = [1 1 0 1] p=2)
+            >>> print(a)
+            [[1 0 1]
+            [1 0 0]
+            [0 1 0]]
         """
         self.representation = "matrix"
 
     def as_polynomial(self) -> None:
         """
-        Change the representation of the element to polynomial
-        So once printing the element, it will be printed as a polynomial
+        Changes the representation of the element to polynomial.
+        So once printing the element, it will be printed as a polynomial.
 
         Returns:
             None
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> a.as_polynomial()
+            >>> a
+            FiniteFieldElement(1 + x², f(x)= 1 + x + x³, p=2)
+            >>> print(a)
+            1 + x²
         """
         self.representation = "polynomial"
 
     @property
-    def order(self) -> int:
+    def order(self) -> Union[int, None]:
         """
-        Calculate the multiplicative order of the element in the field
+        Returns the multiplicative order of the element.
+        The order is define as
 
-        Remark: At first call the order is calculated and stored in the ord attribute, since calculating the order is expensive
-        so only calculate upon request
+        .. math::
+            O(a) = min(n > 0 : a^n = 1 mod p, n \in N)
+
+        .. note::
+            At first call, the order is calculated and stored in the ord attribute.
+            The reason for that is that the calculation of the order can be an expensive operation.
+            First call might take some time depending on the value of p, but once calculated the order can be accessed \
+            quickly.
 
         Returns:
-            int: the multiplicative order of the element
+            int: the multiplicative order of the element. None if the element is 0
         """
         if self.ord is None:
             self.ord = self.multiplicative_order()
@@ -403,70 +681,123 @@ class FiniteFieldElement(object):
 
     def multiplicative_order(self) -> Union[int, None]:
         """
-        Calculate the multiplicative order of the element in the field
-        The multiplicative order of an element a in a finite field is the smallest positive integer n such that a^n = 1
-        For the 0 element, the order is not defined since 0 is not part of the multiplicative group
+        Calculates the multiplicative order of the element in the field.
+
+        The multiplicative order of an element a in a finite field is the smallest positive integer n such that\
+         :math:`a^n = 1`
+        For the 0 element, the order is not defined since 0 is not part of the multiplicative group.
 
         Returns:
-            int: the multiplicative order of the element, None if the element is 0
+            int: the multiplicative order of the element, None if the element is 0.
         """
         if self.ord is not None:
             return self.ord
         if self.gln_a is None or np.all(self.a == 0):
-            raise ValueError("0 element has no order, its not part of the multiplicative group")
+            return None
         _, element_order = self._exponentiation_by_squaring_with_order(self, self.field.order - 1)
         return element_order
 
     def is_generator(self):
         """
-        Check if the element is a generator in the field
-        A generator element is an element whose order is equal to the order of the multiplicative group
+        Check if the element is a generator in the field.
+
+        A generator element is an element whose order is equal to the order of the multiplicative group.
         In other words, a generator element is an element whose powers generate all the elements in the field.
 
         Returns:
             bool: True if the element is a generator, False otherwise
+
+        Example:
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> a.is_generator()
+            True
         """
         return self.order == (self.field.order - 1)
 
     def is_identity_of_multiplication(self):
         """
-        Check if the element is the identity element of the multiplication operation
-        The identity element of the multiplication operation is the element 1
+        Checks if the element is the identity element of the multiplication operation.
+        The identity element of the multiplication operation is the element 1.
 
         Returns:
             bool: True if the element is the identity element, False otherwise
+
+        Example:
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> a.is_identity_of_multiplication()
+            False
         """
         return np.array_equal(self.a, np.array([1] + [0] * (self.dimension - 1)))
 
     @staticmethod
-    def check_that_element_is_in_field(element, field) -> bool:
+    def check_that_element_is_in_field(element: np.ndarray, field: "FiniteField") -> bool:
         """
-        Check if the element is in the field with the given irreducible polynomial f(x)
-        A valid element must be of the form a = a_0 + a_1x + a_2x^2 + ... + a_{n-1}x^{n-1} where n is the degree of f(x)
-        In other words, the degree of the element must be less than the degree of f(x)
+        Check if the element is in the field with the given irreducible polynomial :math:`f(x)`
+
+        A valid element must be of the form :math:`a = a_{0} + a_{1}x + a_{2}x^2 + ... + a_{n-1}x^{n-1}` where\
+         :math:`n` is the degree of :math:`f(x)`.
+        In other words, the degree of the element must be less than the degree of :math:`f(x)`
 
         Args:
-            element (np.ndarray): the element to check
-            field (FiniteField): the field to check the element in
+            element (np.ndarray): the element to check.
+            field (FiniteField): the field to check the element in.
 
         Returns:
-            bool: True if the element is in the field, False otherwise
+            bool: True if the element is in the field, False otherwise.
+
+        Example:
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = np.array([1, 0, 1])
+            >>> FiniteFieldElement.check_that_element_is_in_field(a, field)
+
         """
         return len(field.f) > len(element)
 
     def embed_in_gln(self) -> Union[np.ndarray, None]:
         """
-        Embed the element in GL(n, p) where n is the degree of the extension field.
-        Methodology: for an element a in the field, we calculate the multiplication of a by x^i for i in range(n-1)
-        and put the results in the columns of a matrix. If the multiplication has a degree higher than n-1, we
-        use previously calculated vectors which represent x^i  n <= i < 2n-2
-        the max degree of the multiplication is at most 2n-2 since the highest degree in a is n-1 and the highest degree basis
-        vector is n-1. So the highest degree in the multiplication is 2n-2
+        Embed the element in :math:`GL_{n}(p)` where :math:`n` is the degree of the irreducible polynom :math:`f(x)`.
 
-        Remark: for the 0 element, there is no representation in GL(n, p) since the 0 element is not part of the multiplicative group
+        Methodology: for an element a in the field, we calculate the multiplication of :math:`a*x^i` for :math:`0<=i<=(n-1)`
+        and store the results in the columns of a matrix.
+
+        If the multiplication has a degree higher than :math:`n-1`, we use previously calculated vectors\
+        which represent :math:`x^i` for  :math:`n <= i <= 2n-2`.
+
+        The maximum degree of the multiplication is at most 2n-2 since the highest degree in an element is n-1 and the highest degree basis
+        vector is also n-1. So the highest degree in the multiplication is :math:`2(n-1) = 2n-2`
+
+        .. note::
+            For the zero element, there is no representation in :math:`GL_{n}(p)` since the zero element is not part of the multiplicative group.
+            In this case we return None
 
         Returns:
-            np.ndarray: the matrix representation of the element in GL(n, p)
+            np.ndarray: the matrix representation of the element in :math:`GL_{n}(p)`
+
+        Example:
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> a.embed_in_gln()
+            array([[1, 1, 0],
+                   [0, 0, 1],
+                   [1, 0, 0]])
         """
         if np.all(self.a == 0):
             return None
