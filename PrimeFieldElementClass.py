@@ -7,13 +7,13 @@ class PrimeFieldElement:
         self.p = p
         self.i = self._find_inverse()
 
-    # overload print function
     def __str__(self):
         return f"{self.a} mod {self.p}"
 
+    @same_prime_field
     def __eq__(self, other):
         return self.a == other.a and self.p == other.p and self.inverse == other.inverse
-    # overload add function
+
     @same_prime_field
     def __add__(self, other):
         """
@@ -56,7 +56,9 @@ class PrimeFieldElement:
         Returns:
             PrimeFieldElement: the result of the division
         """
-        return self.__class__((self.a * other.inverse) % self.p, self.p)
+        if other.a == 0:
+            raise ValueError("Division by zero")
+        return self.__class__((self.a * other.i) % self.p, self.p)
 
     @property
     def inverse(self):
@@ -65,7 +67,7 @@ class PrimeFieldElement:
         Returns:
             int: the unit of the element
         """
-        return self.i
+        return PrimeFieldElement(self.i, self.p)
 
     def _find_inverse(self):
         """
@@ -74,9 +76,11 @@ class PrimeFieldElement:
         Returns:
             int: the unit of the element
         """
+        if self.a == 0:
+            return 0
         d, s, t = xgcd(self.a, self.p)
         if d != 1:
-            raise ValueError("Element does not have an unit")
+            raise ValueError("Element does not have an inverse")
         return s % self.p
     
 

@@ -1,7 +1,7 @@
 from typing import List, Dict, Tuple, Union
 import numpy as np
-from utils import valid_repr, refactor_polynom_terms, pad_element, zero_element_check
-
+from utils import valid_repr, refactor_polynom_terms, pad_element, zero_element_check, same_field, invert_matrix
+from PrimeFieldElementClass import PrimeFieldElement
 
 class FiniteField(object):
     """
@@ -20,6 +20,9 @@ class FiniteField(object):
         self.x_powers = self._calculate_illegal_powers()
         self._elements = self._create_elements()
         self._generators = None
+
+    def __eq__(self, other):
+        return self.p == other.p and np.array_equal(self.f, other.f)
 
     def __repr__(self) -> str:
         """
@@ -230,11 +233,15 @@ class FiniteFieldElement(object):
         assert representation in ["polynomial", "vector", "matrix"], "Invalid representation"
         assert self.check_that_element_is_in_field(a, field), "Element is not in the field"
         self.field = field
+        self.p = field.p
         self.a = pad_element(a % field.p, field.f)
         self.gln_a = self.embed_in_gln()
         self.poly_a = np.polynomial.Polynomial(self.a)
         self.ord = None
         self._repr = representation
+
+    def __eq__(self, other):
+        return np.array_equal(self.a, other.a) and self.field == other.field
 
     def __str__(self):
         """
@@ -298,6 +305,7 @@ class FiniteFieldElement(object):
         """
         return len(self.a)
 
+    @same_field
     def __add__(self, other):
         """
         Calculate the addition of the element by another element, the addition is simple vector addition modulo p
@@ -309,6 +317,7 @@ class FiniteFieldElement(object):
         """
         return self.__class__((self.a + other.a) % self.field.p, self.field, representation=self._repr)
 
+    @same_field
     def __sub__(self, other):
         """
         Calculate the subtraction of the element by another element, the subtraction is simple vector subtraction modulo p
@@ -320,6 +329,7 @@ class FiniteFieldElement(object):
         """
         return self.__class__((self.a - other.a) % self.field.p, self.field, representation=self._repr)
 
+    @same_field
     @zero_element_check
     def __mul__(self, other):
         """
@@ -337,6 +347,7 @@ class FiniteFieldElement(object):
         """
         return self.__class__(np.matmul(self.gln_a, other.gln_a)[:, 0] % self.field.p, self.field, representation=self._repr)
 
+    @same_field
     @zero_element_check
     def __truediv__(self, other):
         """
@@ -421,8 +432,11 @@ class FiniteFieldElement(object):
         Returns:
             FiniteFieldElement: the inverse of the element
         """
-        inv = np.linalg.inv(self.gln_a)
-        return self.__class__(inv[:, 0] % self.field.p, self.field, representation=self._repr)
+        gln_a_list = [[PrimeFieldElement(value, self.field.p) for value in row] for row in self.gln_a]
+        inverse_a = np.array(invert_matrix(gln_a_list))[:,0]
+        inverse_a = np.array([element.a for element in inverse_a])
+        return self.__class__(inverse_a, self.field, representation=self._repr)
+
 
     def as_vector(self) -> None:
         """
@@ -504,7 +518,7 @@ class FiniteFieldElement(object):
         Returns:
             bool: True if the element is the identity element, False otherwise
         """
-        return np.all(self.a == np.array([1] + [0] * (self.dimension - 1)))
+        return np.array_equal(self.a, np.array([1] + [0] * (self.dimension - 1)))
 
     @staticmethod
     def check_that_element_is_in_field(element, field) -> bool:
