@@ -14,12 +14,27 @@ def xgcd(a,b):
 
 def same_prime_field(func):
     """
-    Helper function to check if the operands belong to the same prime field
+    Helper function to check if the operands belong to the same prime field, or if one of them is an integer, convert it to a prime field element
     This is used for PrimeFieldElement class, which we implemented but didnt use it in FiniteFieldElement or FiniteField.
     """
     def wrapper(self, other):
+        if isinstance(other, int):
+            other = self.__class__(other, self.p)
+            return func(self, other)
         if self.p != other.p:
             raise ValueError("Operands must belong to the same prime field")
+        return func(self, other)
+    return wrapper
+
+
+def same_field(func):
+    """
+    Helper function to check if the operands belong to the same field
+    This is used for FiniteFieldElement class, which we implemented but didnt use it in FiniteField.
+    """
+    def wrapper(self, other):
+        if self.field != other.field:
+            raise ValueError("Operands must belong to the same field")
         return func(self, other)
     return wrapper
 
@@ -95,3 +110,92 @@ def pad_element(element, f):
         np.array: padded element (if needed)
     """
     return np.pad(element, pad_width=(0, len(f) - len(element) -1 ), mode='constant')
+
+
+def determinant(matrix):
+    """
+    Calculates the determinant of a square matrix recursively.
+
+    Args:
+        matrix (list): a square matrix represented as a list of lists
+
+    Returns:
+        the determinant of the matrix
+    """
+    n = len(matrix)
+    if n == 1:
+        return matrix[0][0]
+    elif n == 2:
+        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+    else:
+        det = 0
+        for j in range(n):
+            minor = [row[:j] + row[j+1:] for row in matrix[1:]]
+            det = matrix[0][j] * determinant(minor)*((-1) ** j) + det
+        return det
+
+def transpose(matrix):
+    """
+    Transposes a matrix.
+
+    Args:
+        matrix (list): a matrix represented as a list of lists
+
+    Returns:
+        list: the transposed matrix
+    """
+    return [[matrix[j][i] for j in range(len(matrix))] for i in range(len(matrix[0]))]
+
+
+def cofactor_matrix(matrix):
+    """
+    Calculates the cofactor matrix of a square matrix.
+
+    Args:
+        matrix (list): a square matrix represented as a list of lists
+
+    Returns:
+        list: the cofactor matrix
+    """
+    n = len(matrix)
+    cofactors = []
+    for i in range(n):
+        cofactor_row = []
+        for j in range(n):
+            minor = [row[:j] + row[j+1:] for row in (matrix[:i] + matrix[i+1:])]
+            cofactor_row.append(determinant(minor) * ((-1) ** (i+j)))
+        cofactors.append(cofactor_row)
+    return cofactors
+
+
+def adjugate_matrix(matrix):
+    """
+    Calculates the adjugate matrix of a square matrix.
+
+    Args:
+        matrix (list): a square matrix represented as a list of lists
+
+    Returns:
+        list: the adjugate matrix
+    """
+    return transpose(cofactor_matrix(matrix))
+
+
+def invert_matrix(matrix):
+    """
+    Inverts a square matrix using the determinant and adjugate.
+
+    Args:
+        matrix (list): a square matrix represented as a list of lists
+
+    Returns:
+        list: the inverse of the matrix
+    """
+    det = determinant(matrix)
+    if det == 0:
+        print("Matrix is singular. Inverse does not exist.")
+        return None
+    adj = adjugate_matrix(matrix)
+    n = len(matrix)
+    inverse = [[adj[i][j] / det for j in range(n)] for i in range(n)]
+    return inverse
