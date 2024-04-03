@@ -1,6 +1,31 @@
 import numpy as np
 
 
+def bsgs(generator, element, group_order):
+    """
+    Baby-step Giant-step algorithm to solve the discrete logarithm problem
+    Args:
+        generator (FiniteFieldElement): g in g^x = h
+        element (FiniteFieldElement): h in g^x = h
+        group_order (int): group order , to initialize the table
+
+    Returns:
+        int: x such that g^x = h mod p
+    """
+    m = int(np.ceil(np.sqrt(group_order)))
+    table = {}
+    # Baby-step
+    for j in range(m):
+        table[pow(generator, j)] = j
+    # Giant-step
+    c = pow(generator, -m)
+    for i in range(m):
+        y = (element * pow(c, i))
+        if y in table:
+            return i * m + table[y]
+    raise ValueError("Discrete logarithm not found")
+
+
 def xgcd(a,b):
     if b == 0:
         if a < 0:
