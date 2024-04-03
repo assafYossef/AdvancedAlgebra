@@ -1,7 +1,0 @@
-Steps: 
-1. Find primitives in k (k = Fp[X] / <f(x)> | where f(x) is irreducible over Fp)
-2. Build a base using one of the primitives (let's say x is primitive, so: B = (1, x, x^2,..., x^r-1) | where r is the degree of f(x))
-3. Define the isomorphism Ta(k) = ak | where a is one of the primitives, and k is the general notion of an element in K (the extened field)
-4. With the isomorphism from 3 and the base from 2, build a general matrice that will be in GLn (you can find the formula for that in page 56 in lecture book)
-5. Now you have a general form of GLn matrice. Given a k in K you can represent it as GLn matrice.
-6. Good Luck!
