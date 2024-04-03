@@ -63,6 +63,20 @@ class PrimeFieldElement:
             raise ValueError("Division by zero")
         return self.__class__((self.a * other.i) % self.p, self.p)
 
+    def __pow__(self, n):
+        """
+        Exponentiation of a prime field element
+        Args:
+            n (int): the exponent
+        Returns:
+            PrimeFieldElement: the result of the exponentiation
+        """
+        if n == 0:
+            return self.__class__(1, self.p)
+        if n < 0:
+            return self.__class__(pow(self.i, -n, self.p), self.p)
+        return self.__class__(pow(self.a, n, self.p), self.p)
+
     @property
     def inverse(self):
         """
