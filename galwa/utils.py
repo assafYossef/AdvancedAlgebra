@@ -159,7 +159,8 @@ def determinant(matrix):
             det = matrix[0][j] * determinant(minor)*((-1) ** j) + det
         return det
 
-def transpose(matrix):
+
+def _transpose(matrix):
     """
     Transposes a matrix.
 
@@ -172,7 +173,7 @@ def transpose(matrix):
     return [[matrix[j][i] for j in range(len(matrix))] for i in range(len(matrix[0]))]
 
 
-def cofactor_matrix(matrix):
+def _cofactor_matrix(matrix):
     """
     Calculates the cofactor matrix of a square matrix.
 
@@ -193,7 +194,7 @@ def cofactor_matrix(matrix):
     return cofactors
 
 
-def adjugate_matrix(matrix):
+def _adjugate_matrix(matrix):
     """
     Calculates the adjugate matrix of a square matrix.
 
@@ -203,7 +204,7 @@ def adjugate_matrix(matrix):
     Returns:
         list: the adjugate matrix
     """
-    return transpose(cofactor_matrix(matrix))
+    return _transpose(_cofactor_matrix(matrix))
 
 
 def invert_matrix(matrix):
@@ -220,7 +221,7 @@ def invert_matrix(matrix):
     if det == 0:
         print("Matrix is singular. Inverse does not exist.")
         return None
-    adj = adjugate_matrix(matrix)
+    adj = _adjugate_matrix(matrix)
     n = len(matrix)
     inverse = [[adj[i][j] / det for j in range(n)] for i in range(n)]
     return inverse
