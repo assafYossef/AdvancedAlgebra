@@ -462,7 +462,6 @@ class FiniteFieldElement(object):
         inverse_a = np.array([element.a for element in inverse_a])
         return self.__class__(inverse_a, self.field, representation=self._repr)
 
-
     def as_vector(self) -> None:
         """
         Change the representation of the element to vector
@@ -519,8 +518,8 @@ class FiniteFieldElement(object):
         """
         if self.ord is not None:
             return self.ord
-        if self.gln_a is None:
-            return None
+        if self.gln_a is None or np.all(self.a == 0):
+            raise ValueError("0 element has no order, its not part of the multiplicative group")
         _, element_order = self._exponentiation_by_squaring_with_order(self, self.field.order - 1)
         return element_order
 
