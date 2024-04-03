@@ -11,6 +11,17 @@ class FiniteField(object):
     """
 
     def __init__(self, p, f: np.ndarray, representation: str = "polynomial"):
+        """
+        Initialize the FiniteField class
+
+        Args:
+            p (int): the prime number for the field
+            f (np.ndarray): the irreducible polynomial f(x) used for the extension
+            representation (str): the representation of the elements in the field - polynomial, vector, matrix
+
+        Raises:
+            AssertionError: if the polynomial f(x) is reducible over F_p or the representation is invalid
+        """
         assert representation in ["polynomial", "vector", "matrix"], "Invalid representation"
         self._repr = representation
         self.p = p
@@ -230,6 +241,17 @@ class FiniteFieldElement(object):
     """
 
     def __init__(self, a: np.ndarray, field, representation: str = "polynomial"):
+        """
+        Initialize the FiniteFieldElement class
+
+        Args:
+            a (np.ndarray): the element in the field
+            field (FiniteField): the field the element belongs to
+            representation (str): the representation of the element - polynomial, vector, matrix
+
+        Raises:
+            AssertionError: if the representation is invalid or the element is not in the field
+        """
         assert representation in ["polynomial", "vector", "matrix"], "Invalid representation"
         assert self.check_that_element_is_in_field(a, field), "Element is not in the field"
         self.field = field
