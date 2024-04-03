@@ -3,14 +3,36 @@ import numpy as np
 
 def bsgs(generator, element, group_order):
     """
-    Baby-step Giant-step algorithm to solve the discrete logarithm problem
+    Baby-step Giant-step algorithm to solve the discrete logarithm problem.
+
+    ..math::
+        g^x = h
+
     Args:
-        generator (FiniteFieldElement): g in g^x = h
-        element (FiniteFieldElement): h in g^x = h
-        group_order (int): group order , to initialize the table
+        generator (FiniteFieldElement): g in :math:`g^x = h`
+        element (FiniteFieldElement): h in :math:`g^x = h`
+        group_order (int): group order , to initialize the table.
 
     Returns:
         int: x such that g^x = h mod p
+
+    Raises:
+        ValueError: if the discrete logarithm is not found
+
+    Example:
+        >>> from galwa import FiniteFieldElement, FiniteField
+        >>> from galwa.utils import bsgs
+        >>> import numpy as np
+        >>> f = np.array([2, 0, 0, 2, 1])
+        >>> p = 3
+        >>> F = FiniteField(p, f)
+        >>> g = FiniteFieldElement(np.array([1, 1, 0, 0]), F)
+        >>> h = g ** 10
+        >>> h
+        FiniteFieldElement(2, f(x)= 2 + 2·x³ + x⁴, p=3)
+        >>> order = F.order - 1
+        >>> bsgs(g, h, order)
+        10
     """
     m = int(np.ceil(np.sqrt(group_order)))
     table = {}
@@ -27,6 +49,22 @@ def bsgs(generator, element, group_order):
 
 
 def xgcd(a,b):
+    """
+    Extended Euclidean algorithm to find the greatest common divisor and the coefficients of Bezout's identity.
+
+    Args:
+        a (int): first number
+        b (int): second number
+
+    Returns:
+        tuple: gcd, s, t such that :math:`gcd(a, b) = s * a + t * b`
+
+    Example:
+
+        >>> from galwa.utils import xgcd
+        >>> xgcd(240, 46)
+        (2, -9, 47)
+    """
     if b == 0:
         if a < 0:
             return -a, -1, 0
@@ -39,8 +77,8 @@ def xgcd(a,b):
 
 def same_prime_field(func):
     """
-    Helper function to check if the operands belong to the same prime field, or if one of them is an integer, convert it to a prime field element
-    This is used for PrimeFieldElement class, which we implemented but didnt use it in FiniteFieldElement or FiniteField.
+    Helper function to check if the operands belong to the same prime field, or if one of them is an integer,\
+     convert it to a prime field element.
     """
     def wrapper(self, other):
         if isinstance(other, int):
@@ -54,8 +92,7 @@ def same_prime_field(func):
 
 def same_field(func):
     """
-    Helper function to check if the operands belong to the same field
-    This is used for FiniteFieldElement class, which we implemented but didnt use it in FiniteField.
+    Helper function to check if the operands belong to the same field.
     """
     def wrapper(self, other):
         if self.field != other.field:
@@ -66,7 +103,7 @@ def same_field(func):
 
 def zero_element_check(func):
     """
-    Helper function to check if an element is zero for the multiplicative group, so multiplication or division cannot be done
+    Helper function to check if an element is zero for the multiplicative group, so multiplication or division cannot be done.
     """
     def wrapper(self, other):
         if np.all(self.a == 0) or np.all(other.a == 0):
@@ -77,7 +114,8 @@ def zero_element_check(func):
 
 def valid_repr(func):
     """
-    Helper function to check if the representation is valid
+    Helper function to check if the representation is valid.
+
     A valid representation is either "polynomial", "vector" or "matrix"
     """
     def wrapper(self, value):
@@ -88,19 +126,21 @@ def valid_repr(func):
 
 def refactor_polynom_terms(poly_repr: str) -> str:
     """
-    Helper function to refactor the polynomial representation
-    The polynomial representation of numpy returns float coefficients, as well it doesnt drop zero coefficients
+    Helper function to refactor the polynomial representation.
+
+    The polynomial representation of numpy returns float coefficients, as well it doesnt drop zero coefficients.
+
     This function will refactor the polynomial representation to a more human readable form
 
     Example:
-    poly_repr = "1.0 x^2 + 0.0 x^1 + 3.0 x^0"
-    refactor_polynom_terms(poly_repr) -> "x^2 + 3"
+    poly_repr = :math:`1.0 x^2 + 0.0 x^1 + 3.0 x^0`
+    refactor_polynom_terms(poly_repr) -> :math:`x^2 + 3`
 
     Args:
-        poly_repr (str): polynomial representation
+        poly_repr (str): polynomial representation.
 
     Returns:
-        str: refactored polynomial representation
+        str: refactored polynomial representation.
     """
     poly_repr = f"{poly_repr}".replace(".0", "")
     new_str = ""
@@ -116,20 +156,18 @@ def refactor_polynom_terms(poly_repr: str) -> str:
                 new_str += f"{term} "
         else:
             if len(new_str) > 0:
-                # remove the last term, it will be a arthimatic operator and space
                 new_str = new_str[:-2]
-    # remove space from end and beginning
     new_str = new_str.strip("+- ")
-    # if new_str is empty return 0
     return new_str if new_str else "0"
 
 
 def pad_element(element, f):
     """
-    Helper function to pad the element with zeros to match the size of f
+    Helper function to pad the element with zeros to match the size of the irreducible polynomial.
+
     Args:
-        element (np.array): element to pad
-        f (np.array): irreducible polynomial to match the size
+        element (np.array): element to pad.
+        f (np.array): irreducible polynomial to match the size.
 
     Returns:
         np.array: padded element (if needed)
@@ -142,10 +180,10 @@ def determinant(matrix):
     Calculates the determinant of a square matrix recursively.
 
     Args:
-        matrix (list): a square matrix represented as a list of lists
+        matrix (list): a square matrix represented as a list of lists.
 
     Returns:
-        the determinant of the matrix
+        the determinant of the matrix.
     """
     n = len(matrix)
     if n == 1:
@@ -165,10 +203,10 @@ def _transpose(matrix):
     Transposes a matrix.
 
     Args:
-        matrix (list): a matrix represented as a list of lists
+        matrix (list): a matrix represented as a list of lists.
 
     Returns:
-        list: the transposed matrix
+        list: the transposed matrix.
     """
     return [[matrix[j][i] for j in range(len(matrix))] for i in range(len(matrix[0]))]
 
@@ -178,10 +216,10 @@ def _cofactor_matrix(matrix):
     Calculates the cofactor matrix of a square matrix.
 
     Args:
-        matrix (list): a square matrix represented as a list of lists
+        matrix (list): a square matrix represented as a list of lists.
 
     Returns:
-        list: the cofactor matrix
+        list: the cofactor matrix.
     """
     n = len(matrix)
     cofactors = []
@@ -199,10 +237,10 @@ def _adjugate_matrix(matrix):
     Calculates the adjugate matrix of a square matrix.
 
     Args:
-        matrix (list): a square matrix represented as a list of lists
+        matrix (list): a square matrix represented as a list of lists.
 
     Returns:
-        list: the adjugate matrix
+        list: the adjugate matrix.
     """
     return _transpose(_cofactor_matrix(matrix))
 
