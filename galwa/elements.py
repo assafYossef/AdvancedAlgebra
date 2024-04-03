@@ -73,7 +73,7 @@ class PrimeFieldElement:
         Raises:
             AssertionError: if the elements are not in the same prime field.
         """
-        return self.a == other.a and self.p == other.p and self.inverse == other.inverse
+        return self.a == other.a and self.p == other.p
 
     @same_prime_field
     def __add__(self, other):
@@ -177,7 +177,10 @@ class PrimeFieldElement:
             >>> a.inverse
             PrimeFieldElement(value= 2,prime= 5)
         """
-        return PrimeFieldElement(self.i, self.p)
+        if self.a != 0:
+            return PrimeFieldElement(self.i, self.p)
+        else:
+            return None
 
     def _find_inverse(self):
         """

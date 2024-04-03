@@ -8,10 +8,10 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('..'))
 project = 'Galwa Fields'
-copyright = '2024, Ido Nahum and Assaf Yosef'
-author = 'Ido Nahum and Assaf Yosef'
+copyright = '2024, Ido Nahum and Assaf Yossef'
+author = 'Ido Nahum and Assaf Yossef'
 release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
