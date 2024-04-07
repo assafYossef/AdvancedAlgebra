@@ -1,5 +1,5 @@
-Galwa Fields
-=============
+Galwa Fields - API Documentation
+================================
 
 galwa.fields
 -------------------
