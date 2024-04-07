@@ -10,8 +10,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath('../..'))
 project = 'Galwa Fields'
-copyright = '2024, Ido Nahum and Assaf Yosef'
-author = 'Ido Nahum and Assaf Yosef'
+copyright = '2024, Ido Nahum and Assaf Yossef'
+author = 'Ido Nahum and Asaf Yossef'
 release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
@@ -19,9 +19,25 @@ release = '1.0.0'
 
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.imgmath',
+    'sphinx_simplepdf'
 ]
 
+simplepdf_vars = {
+    'bottom-center-content': '"2024, Ido Nahum and Assaf Yossef"'
+}
+
+html_context = {
+    'docs_scope': 'external',
+    'cover_logo_title': '',
+    'cover_meta_data': 'By Ido Nahum and Assaf Yossef',
+}
+version = '1.0.0'
+simplepdf_file_name = 'GalwaFields.pdf'
+imgmath_image_format = 'svg'
+imgmath_latex = '/Library/TeX/texbin/latex'
+imgmath_dvisvgm = '/Library/TeX/texbin/dvisvgm'
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = True
