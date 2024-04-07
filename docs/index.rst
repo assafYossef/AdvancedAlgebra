@@ -9,4 +9,5 @@ Welcome to Galwa Fields's documentation!
 .. toctree::
    :maxdepth: 2
 
+   tutorial.rst
    galwa.rst
