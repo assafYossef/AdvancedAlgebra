@@ -28,11 +28,10 @@ def generic_run(public_method_names, p):
 
 def run_all_tests():
     p = PrimeFieldTests(p = 11)
-    public_method_names = [method for method in dir(p) if callable(getattr(p, method)) if not method.startswith('_')]  # 'private' methods start from 
+    public_method_names = [method for method in dir(p) if callable(getattr(p, method)) if method.startswith('test')]
     generic_run(public_method_names, p)
 
     p = FiniteFieldTests()
-    public_method_names = [method for method in dir(p) if callable(getattr(p, method)) if not method.startswith('_')]  # 'private' methods start from 
+    public_method_names = [method for method in dir(p) if callable(getattr(p, method)) if method.startswith('test')]
     generic_run(public_method_names, p)
-    # p.test_order_of_elements()
 

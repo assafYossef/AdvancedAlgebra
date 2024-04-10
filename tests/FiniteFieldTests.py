@@ -1,7 +1,9 @@
 import galois
 import numpy as np
+import random
 
 from galwa.fields import FiniteField
+from galwa.utils import bsgs
 
 
 def str_rep(poly):
@@ -190,95 +192,130 @@ class FiniteFieldTests:
 
                 if gf_element2 == gf(0):
                     continue
+
+                gf_element1.multiplicative_order()
                 
                 # divide the elements and then convert it to galois type
                 sum_result = gf(str_rep((element1 / element2).a))
 
                 assert sum_result == gf_element1 / gf_element2
-    
+
 
     def test_inverse(self):
         p = 97
 
         poly = [5, 96, 1]
 
-        
+        gf = galois.GF(p ** (len(poly) - 1), repr="poly", irreducible_poly=poly[::-1])
+        l = FiniteField(p=p, f=np.array(poly))
 
+        assert len(l.elements) == len(gf.elements)
 
-        
+        for element in l.elements:
+            gf_element = gf(str_rep(element.a))
+
+            # skip on the zero and element
+            if gf_element == gf(0):
+                continue
+
+            assert gf_element ** -1 == gf(str_rep((element ** -1).a))
     
-    # def test_order_of_elements(self):
-    #     p = 7
 
-    #     poly = [4, 0, 6, 1]
+    def test_pow(self):
+        p = 47
 
-    #     gf = galois.GF(p ** (len(poly) - 1), repr="poly", irreducible_poly=poly[::-1])
-    #     l = FiniteField(p=p, f=np.array(poly))
+        poly = [5, 45, 1]
 
-    #     assert len(l.elements) == len(gf.elements)
+        gf = galois.GF(p ** (len(poly) - 1), repr="poly", irreducible_poly=poly[::-1])
+        l = FiniteField(p=p, f=np.array(poly))
 
-    #     for element in l.elements:
-    #         gf_element = gf(str_rep(element.a))
+        for power in range(-5, 5):
+            element = l.elements[random.randint(0, len(l.elements) - 1)]
+            gf_element = gf(str_rep(element.a))
 
-    #         # skip on the zero element
-    #         if gf_element == gf(0):
-    #             continue
+            # if we chose 0, we pick another one
+            while gf_element == gf(0):
+                element = l.elements[random.randint(0, len(l.elements) - 1)]
+                gf_element = gf(str_rep(element.a))
 
-    #         try:
-    #             assert gf_element.multiplicative_order() == element.order
-    #         except AssertionError as e:
-    #             print(e)
-    #             print(f"Galois Result: {gf_element.multiplicative_order()}") # 6
-    #             print(f"Our Result: {element.order}")  # 42
-    #             print(f"Polynom Representaion: {str_rep(element.a)}") # 3
-    #             print(f"Our Representions: {str(element)}")
-    #             print(f"Vector Representaion: {element.a}")
-    #             print()
+            assert gf_element ** power == gf(str_rep((element ** power).a))
 
 
-    # def test(self):
-    #     p = 7
+    def test_order_of_elements(self):
+        p = 7
 
-    #     poly = [4, 0, 6, 1]
+        poly = [4, 0, 6, 1]
 
-    #     gf = galois.GF(p**(len(poly) - 1), repr="poly", irreducible_poly=poly[::-1])
-    #     l = FiniteField(p=p, f=np.array(poly), representation="vector")
+        gf = galois.GF(p ** (len(poly) - 1), repr="poly", irreducible_poly=poly[::-1])
+        l = FiniteField(p=p, f=np.array(poly))
 
-    #     for element in l.elements:
-    #         if str_rep(element.a) == str_rep([3, 0, 0]):
-    #             print("here")
-    #             gf_element = gf(str_rep(element.a))
-    #             print(element.order)
-                
-                # counter = 1
-                # temp_element = element
-                # while gf_element != gf(1):
-                #     temp_element = element * temp_element
-                #     gf_element = gf(str_rep(temp_element.a))
-                #     counter += 1
-                
-                # print(counter)
-                # print(element.multiplicative_order())
+        assert len(l.elements) == len(gf.elements)        
 
+        for element in l.elements:
+            gf_element = gf(str_rep(element.a))            
 
+            # skip on the zero element
+            if gf_element == gf(0):
+                continue
+            
+            assert gf_element.multiplicative_order() == element.order
 
-    # def test_gln(self):
-    #     p = 2
+    
+    def test_generators(self):
+        p = 7
 
-    #     poly = [1,1,1]
+        poly = [3, 6, 1]
 
-    #     gf = galois.GF(p**2, repr="poly", irreducible_poly=poly)
+        gf = galois.GF(p ** (len(poly) - 1), repr="poly", irreducible_poly=poly[::-1])
+        l = FiniteField(p=p, f=np.array(poly))
+
+        generators = l.generators
+
+        assert len(generators) == len(gf.primitive_elements)
+
+        for generator in generators:
+            gf_element = gf(str_rep(generator.a))
+
+            assert gf_element in gf.primitive_elements
+    
+    def test_bsgs(self):
+        p = 7
+
+        poly = [3, 6, 1]
+
+        gf = galois.GF(p ** (len(poly) - 1), repr="poly", irreducible_poly=poly[::-1])
+        l = FiniteField(p=p, f=np.array(poly))
+
+        generators = l.generators
+
+        for element in l.elements:
+            gf_element = gf(str_rep(element.a))
+
+            if gf_element == gf(0):
+                continue
+
+            g = generators[random.randint(0, len(generators) - 1)]
+
+            x = bsgs(generator=g, element=element, group_order=g.order)
+
+            assert g ** x == element
         
-    #     l = FiniteField(p=2, f=np.array(poly), representation="vector")
+        g = l.elements[random.randint(0, len(l.elements) - 1)]
+        g_gf = gf(str_rep(g.a))
 
-    #     assert len(l.elements) == len(gf.elements)
-    #     # convert the elements to galois elements
-    #     for element in l.elements:
-    #         convert.append(gf(str_rep(element.a)))
-        
-        # for element in gf.elements:
-        #     if element.characteristic_poly() in convert:
-        #         print("yes")
-        
-        # convert = np.array(convert)
-        # assert (convert == gf.elements).all()
+        while g_gf == gf(0):
+            g = l.elements[random.randint(0, len(l.elements) - 1)]
+            g_gf = gf(str_rep(g.a))
+            
+        for element in l.elements:
+            gf_element = gf(str_rep(element.a))
+
+            if gf_element == gf(0):
+                continue
+
+            try:
+                x = bsgs(generator=g, element=element, group_order=g.order)
+                assert g ** x == element
+            except ValueError:
+                x = gf_element.log(g_gf)
+                assert g_gf ** x != gf_element

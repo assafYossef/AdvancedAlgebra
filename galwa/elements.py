@@ -1,5 +1,6 @@
 from typing import Union, Optional, Tuple
 import numpy as np
+
 from galwa.utils import valid_repr, refactor_polynom_terms, pad_element, zero_element_check, same_field, invert_matrix
 from galwa.utils import xgcd, same_prime_field
 
@@ -699,8 +700,13 @@ class FiniteFieldElement(object):
             return self.ord
         if self.gln_a is None or np.all(self.a == 0):
             return None
-        _, element_order = self._exponentiation_by_squaring_with_order(self, self.field.order - 1)
-        return element_order
+        for divider in self.field.field_size_dividers:
+            res, _ = self._exponentiation_by_squaring_with_order(self, divider)
+
+            if res.is_identity_of_multiplication():
+                return divider
+
+        return None
 
     def is_generator(self):
         """
