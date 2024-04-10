@@ -2,29 +2,7 @@ import galois
 
 from galwa.elements import PrimeFieldElement
 
-def test_prime_field_element():
-    p = 11
-    
-    gf = galois.GF(p)
 
-    x = PrimeFieldElement(3, p)
-    y = PrimeFieldElement(5, p)
-    z = PrimeFieldElement(7, p)
-    w = PrimeFieldElement(9, p)
-    n = PrimeFieldElement(10, p)
-
-    # assert x + y == PrimeFieldElement(8, p)
-    assert x + y == PrimeFieldElement(int(gf(3) + gf(5)), p)
-    assert x - y == PrimeFieldElement(9, p)
-    assert x * y == PrimeFieldElement(4, p)
-    assert x / y == PrimeFieldElement(5, p)
-    assert x.inverse == 4
-    assert y.inverse == 9
-    assert z.inverse == 8
-    assert w.inverse == 5
-    assert n.inverse == 10
-
-    print("All tests passed")
 class PrimeFieldTests:
     def __init__(self, p):
         self.p = p

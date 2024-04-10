@@ -525,7 +525,8 @@ class FiniteFieldElement(object):
             hash: the hash of the element
         """
         return hash(tuple(self.a))
-
+ 
+    
     @staticmethod
     def _exponentiation_by_squaring_with_order(a, n) -> Tuple["FiniteFieldElement", Optional[int]]:
         """
@@ -552,6 +553,7 @@ class FiniteFieldElement(object):
             FiniteFieldElement: the result of the exponentiation.
             int: the order of the element, None if the order couldn't be found for the specific n.
         """
+
         if n == 0:
             return 1, None
         if n == 1:
