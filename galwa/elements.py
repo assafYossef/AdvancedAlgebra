@@ -1,4 +1,4 @@
-from typing import Union, Optional, Tuple
+from typing import Union, Optional
 import numpy as np
 
 from galwa.utils import valid_repr, refactor_polynom_terms, pad_element, zero_element_check, same_field, invert_matrix
@@ -507,15 +507,11 @@ class FiniteFieldElement(object):
         if power == 0:
             return self.__class__(np.array([1] + [0] * (self.dimension - 1)), self.field, representation=self._repr)
         if power > 0:
-            res, element_order = self._exponentiation_by_squaring_with_order(self, power)
-            if self.ord is None:
-                self.ord = element_order
+            res = self._exponentiation_by_squaring_with_order(self, power)
             return res
         else:
             inverse = self._get_inverse()
-            res, element_order = self._exponentiation_by_squaring_with_order(inverse, -power)
-            if self.ord is None:
-                self.ord = element_order
+            res = self._exponentiation_by_squaring_with_order(inverse, -power)
             return res
 
     def __hash__(self):
@@ -529,22 +525,9 @@ class FiniteFieldElement(object):
  
     
     @staticmethod
-    def _exponentiation_by_squaring_with_order(a, n) -> Tuple["FiniteFieldElement", Optional[int]]:
+    def _exponentiation_by_squaring_with_order(a, n) -> "FiniteFieldElement":
         """
-        This function have 2 purposes:
-        first calculate the exponentiation of the element :math:`a^n` using the exponentiation by squaring algorithm.
-
-
-        Secondly, we use the fact that if :math:`a^n = 1`, then the order of :math:`a` divides :math:`n`, so we can try and calculate the order \
-         of the element when calculating the exponentiation by squaring.
-
-        This is true from lagrange theorem, that for :math:`H` a subgroup of :math:`G`, the order of any element\
-        in :math:`G` divides \
-        the order of the group :math:`G`. That is true for all :math:`g \in G , |<g>| | |G|`
-
-
-        In our case the multiplicative group of :math:`F_{p}^x = F_{p} - \{0\}` is a subgroup of the multiplicative group :math:`l^x` where :math:`l` \
-        is the extended field :math:`l = F_{p}[x]/<f(x)>` . So for  all :math:`a \in l^x, O(a) | O(l^x)`
+        This function calculate the exponentiation of the element :math:`a^n` using the exponentiation by squaring algorithm.
 
         Args:
             a (FiniteFieldElement): the element to exponentiate.
@@ -552,23 +535,21 @@ class FiniteFieldElement(object):
 
         Returns:
             FiniteFieldElement: the result of the exponentiation.
-            int: the order of the element, None if the order couldn't be found for the specific n.
         """
 
         if n == 0:
-            return 1, None
+            return 1
         if n == 1:
             if a.is_identity_of_multiplication():
-                return a, 1
-            return a, None
-        res, element_order = FiniteFieldElement._exponentiation_by_squaring_with_order(a, n // 2)
+                return a
+            return a
+        res = FiniteFieldElement._exponentiation_by_squaring_with_order(a, n // 2)
         if n % 2 == 0:
             res = res * res
         else:
             res = a * res * res
-        if res.is_identity_of_multiplication() and element_order is None:
-            element_order = n
-        return res, element_order
+
+        return res
 
     def _get_inverse(self) -> "FiniteFieldElement":
         """
@@ -701,7 +682,7 @@ class FiniteFieldElement(object):
         if self.gln_a is None or np.all(self.a == 0):
             return None
         for divider in self.field.field_size_dividers:
-            res, _ = self._exponentiation_by_squaring_with_order(self, divider)
+            res = self._exponentiation_by_squaring_with_order(self, divider)
 
             if res.is_identity_of_multiplication():
                 return divider

@@ -263,3 +263,20 @@ def invert_matrix(matrix):
     n = len(matrix)
     inverse = [[adj[i][j] / det for j in range(n)] for i in range(n)]
     return inverse
+
+
+def find_all_dividers_of_field_size(field):
+        """
+        Find all the dividers of the size of the extension field.
+
+        Returns:
+            List[int]: sorted array with all the dividers of the extension field
+        """
+        field_size = field.order - 1
+        divisors = set()
+        for i in range(1, int(np.sqrt(field_size)) + 1):
+            if field_size % i == 0:
+                divisors.add(i)
+                divisors.add(field_size // i)
+        
+        return sorted(list(divisors)) 
