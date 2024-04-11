@@ -1,4 +1,5 @@
 import numpy as np
+import re
 
 
 def bsgs(generator, element, group_order):
@@ -144,8 +145,10 @@ def refactor_polynom_terms(poly_repr: str) -> str:
     """
     poly_repr = f"{poly_repr}".replace(".0", "")
     new_str = ""
-    split_str = poly_repr.split(" ")
+    split_str = re.split(r'\s*([-+])\s*', poly_repr)
+
     for term in split_str:
+        term = term.strip()
         if term[0] != "0":
             if term[0] == "1":
                 if len(term) > 1:
