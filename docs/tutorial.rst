@@ -101,6 +101,10 @@ Code examples
 -------------
 Lets move to the code.
 
+First, we need to install the library, from the base directory of the project run the following command:
+
+    >>> pip install .
+
 We define three classes:
 
 1. PrimeFieldElement - a class that represents an element in a prime field :math:`F_p`
