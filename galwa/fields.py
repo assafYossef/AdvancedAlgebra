@@ -1,7 +1,8 @@
 from typing import List, Dict, Tuple, Optional
 import numpy as np
+
 from galwa.elements import FiniteFieldElement
-from galwa.utils import valid_repr, refactor_polynom_terms, pad_element
+from galwa.utils import valid_repr, refactor_polynom_terms, pad_element, find_all_dividers_of_field_size
 
 
 class FiniteField(object):
@@ -45,6 +46,7 @@ class FiniteField(object):
         self.x_powers = self._calculate_illegal_powers()
         self._elements = self._create_elements()
         self._generators = None
+        self.field_size_dividers = self._find_all_dividers_of_field_size()
 
     def __eq__(self, other) -> bool:
         """
@@ -173,6 +175,15 @@ class FiniteField(object):
         [FiniteFieldElement(0, f(x)= 1 + x + x², p=2), FiniteFieldElement(1, f(x)= 1 + x + x², p=2), FiniteFieldElement(x, f(x)= 1 + x + x², p=2), FiniteFieldElement(1 + x, f(x)= 1 + x + x², p=2)]
         """
         self.representation = "polynomial"
+    
+    def _find_all_dividers_of_field_size(self):
+        """
+        Find all the dividers of the size of the extension field.
+
+        Returns:
+            List[int]: sorted array with all the dividers of the extension field
+        """
+        return find_all_dividers_of_field_size(self.order - 1)
 
     def _check_that_f_is_irreducible(self) -> bool:
         """

@@ -266,3 +266,20 @@ def invert_matrix(matrix):
     n = len(matrix)
     inverse = [[adj[i][j] / det for j in range(n)] for i in range(n)]
     return inverse
+
+
+def find_all_dividers_of_field_size(num):
+        """
+        Find all the dividers of the size of the given number.
+
+        Returns:
+            List[int]: sorted array with all the dividers of the given number
+        """
+
+        divisors = set()
+        for i in range(1, int(np.sqrt(num)) + 1):
+            if num % i == 0:
+                divisors.add(i)
+                divisors.add(num // i)
+        
+        return sorted(list(divisors)) 
