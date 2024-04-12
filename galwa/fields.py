@@ -183,7 +183,7 @@ class FiniteField(object):
         Returns:
             List[int]: sorted array with all the dividers of the extension field
         """
-        return find_all_dividers_of_field_size(self)
+        return find_all_dividers_of_field_size(self.order - 1)
 
     def _check_that_f_is_irreducible(self) -> bool:
         """
