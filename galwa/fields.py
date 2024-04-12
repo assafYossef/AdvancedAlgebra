@@ -2,7 +2,7 @@ from typing import List, Dict, Tuple, Optional
 import numpy as np
 
 from galwa.elements import FiniteFieldElement
-from galwa.utils import valid_repr, refactor_polynom_terms, pad_element, find_all_dividers_of_field_size
+from galwa.utils import valid_repr, refactor_polynom_terms, pad_element, find_all_dividers_of_number
 
 
 class FiniteField(object):
@@ -183,7 +183,7 @@ class FiniteField(object):
         Returns:
             List[int]: sorted array with all the dividers of the extension field
         """
-        return find_all_dividers_of_field_size(self.order - 1)
+        return find_all_dividers_of_number(self.order - 1)
 
     def _check_that_f_is_irreducible(self) -> bool:
         """

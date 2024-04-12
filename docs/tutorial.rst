@@ -339,8 +339,13 @@ In our case the multiplicative group of :math:`F_{p}^x = F_{p} - \{0\}` is a sub
 
 So for  all :math:`a \in l^x, O(a) | O(l^x)`.
 
-Then finding the order of the element is much easier, just calculate :math:`a^{|l^x|}` using exponentiation by squaring and we can be sure that in some point if the element is not a generator then the order will be found before reaching the maximum number of iterations.
-Because exponentiation by squaring calculates the power by dividing the power by 2 each time, so :math:`|l^x| = 2*k*|a|` where :math:`k` is the number of iterations. So at some point we will reach the power :math:`|a| = |l^x| / 2*k` and if the result is 1 then we found the order. That way we get a complexity of :math:`O(log(|l^x|))`.
+So first, we calculate all divisors of the order of the multiplicative group of the field, the complexity of this operation is :math:`O(\sqrt{n})`\ where :math:`n` is the order of the multiplicative group.
+
+The divisors array will be sorted, we will start from the smallest and calculate :math:`a^{d}` for each divisor :math:`d` and check if the result is the identity element.
+
+Calculating :math:`a^{d}` can be done using exponentiation by squaring algorithm, the complexity of this operation is :math:`O(\log(d))`.
+
+So the complexity in the best case will be :math:`O(\log(d)` and in the worst case :math:`O(k\log(d))` where :math:`k` is the number of divisors.
 
 
 2. Checking if the element is a generator:

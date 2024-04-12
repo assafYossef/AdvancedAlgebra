@@ -507,11 +507,11 @@ class FiniteFieldElement(object):
         if power == 0:
             return self.__class__(np.array([1] + [0] * (self.dimension - 1)), self.field, representation=self._repr)
         if power > 0:
-            res = self._exponentiation_by_squaring_with_order(self, power)
+            res = self._exponentiation_by_squaring(self, power)
             return res
         else:
             inverse = self._get_inverse()
-            res = self._exponentiation_by_squaring_with_order(inverse, -power)
+            res = self._exponentiation_by_squaring(inverse, -power)
             return res
 
     def __hash__(self):
@@ -525,7 +525,7 @@ class FiniteFieldElement(object):
  
     
     @staticmethod
-    def _exponentiation_by_squaring_with_order(a, n) -> "FiniteFieldElement":
+    def _exponentiation_by_squaring(a, n) -> "FiniteFieldElement":
         """
         This function calculate the exponentiation of the element :math:`a^n` using the exponentiation by squaring algorithm.
 
@@ -543,7 +543,7 @@ class FiniteFieldElement(object):
             if a.is_identity_of_multiplication():
                 return a
             return a
-        res = FiniteFieldElement._exponentiation_by_squaring_with_order(a, n // 2)
+        res = FiniteFieldElement._exponentiation_by_squaring(a, n // 2)
         if n % 2 == 0:
             res = res * res
         else:
@@ -674,15 +674,45 @@ class FiniteFieldElement(object):
          :math:`a^n = 1`
         For the 0 element, the order is not defined since 0 is not part of the multiplicative group.
 
+        Methodology:
+
+        From lagrange theorem we know that for :math:`H` as subgroup of :math:`G` then the order of any element in :math:`G` divides the order of :math:`G`.\
+
+        That is true for all :math:`g \in G , |<g>| | |G|`
+
+        In our case the multiplicative group of :math:`F_{p}^x = F_{p} - \{0\}` is a subgroup of the multiplicative group :math:`l^x`.
+
+        So for  all :math:`a \in l^x, O(a) | O(l^x)`.
+
+        So first, we calculate all divisors of the order of the multiplicative group of the field, the complexity of this operation is :math:`O(\sqrt{n})`\ where :math:`n` is the order of the multiplicative group.
+
+        The divisors array will be sorted, we will start from the smallest and calculate :math:`a^{d}` for each divisor :math:`d` and check if the result is the identity element.
+
+        Calculating :math:`a^{d}` can be done using exponentiation by squaring algorithm, the complexity of this operation is :math:`O(\log(d))`.
+
+        So the complexity in the best case will be :math:`O(\log(d)` and in the worst case :math:`O(k\log(d))` where :math:`k` is the number of divisors.
+
+
         Returns:
             int: the multiplicative order of the element, None if the element is 0.
+
+        Example:
+
+            >>> from galwa import FiniteField, FiniteFieldElement
+            >>> import numpy as np
+            >>> f = np.array([1, 1, 0, 1])
+            >>> p = 2
+            >>> field = FiniteField(p, f)
+            >>> a = FiniteFieldElement(np.array([1, 0, 1]), field)
+            >>> a.multiplicative_order()
+            7
         """
         if self.ord is not None:
             return self.ord
         if self.gln_a is None or np.all(self.a == 0):
             return None
         for divider in self.field.field_size_dividers:
-            res = self._exponentiation_by_squaring_with_order(self, divider)
+            res = self._exponentiation_by_squaring(self, divider)
 
             if res.is_identity_of_multiplication():
                 return divider

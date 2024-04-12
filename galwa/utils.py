@@ -49,7 +49,7 @@ def bsgs(generator, element, group_order):
     raise ValueError("Discrete logarithm not found")
 
 
-def xgcd(a,b):
+def xgcd(a, b):
     """
     Extended Euclidean algorithm to find the greatest common divisor and the coefficients of Bezout's identity.
 
@@ -81,6 +81,7 @@ def same_prime_field(func):
     Helper function to check if the operands belong to the same prime field, or if one of them is an integer,\
      convert it to a prime field element.
     """
+
     def wrapper(self, other):
         if isinstance(other, int):
             other = self.__class__(other, self.p)
@@ -88,6 +89,7 @@ def same_prime_field(func):
         if self.p != other.p:
             raise ValueError("Operands must belong to the same prime field")
         return func(self, other)
+
     return wrapper
 
 
@@ -95,10 +97,12 @@ def same_field(func):
     """
     Helper function to check if the operands belong to the same field.
     """
+
     def wrapper(self, other):
         if self.field != other.field:
             raise ValueError("Operands must belong to the same field")
         return func(self, other)
+
     return wrapper
 
 
@@ -106,10 +110,12 @@ def zero_element_check(func):
     """
     Helper function to check if an element is zero for the multiplicative group, so multiplication or division cannot be done.
     """
+
     def wrapper(self, other):
         if np.all(self.a == 0) or np.all(other.a == 0):
             raise ValueError("Zero is not part of the multiplicative group, so it cannot be used in this operation")
         return func(self, other)
+
     return wrapper
 
 
@@ -119,9 +125,11 @@ def valid_repr(func):
 
     A valid representation is either "polynomial", "vector" or "matrix"
     """
+
     def wrapper(self, value):
         assert value in ["polynomial", "vector", "matrix"], "Invalid representation"
         return func(self, value)
+
     return wrapper
 
 
@@ -164,7 +172,7 @@ def refactor_polynom_terms(poly_repr: str) -> str:
     return new_str if new_str else "0"
 
 
-def pad_element(element, f):
+def pad_element(element: np.array, f: np.array) -> np.array:
     """
     Helper function to pad the element with zeros to match the size of the irreducible polynomial.
 
@@ -175,10 +183,10 @@ def pad_element(element, f):
     Returns:
         np.array: padded element (if needed)
     """
-    return np.pad(element, pad_width=(0, len(f) - len(element) -1 ), mode='constant')
+    return np.pad(element, pad_width=(0, len(f) - len(element) - 1), mode='constant')
 
 
-def determinant(matrix):
+def determinant(matrix: list) -> int:
     """
     Calculates the determinant of a square matrix recursively.
 
@@ -196,12 +204,12 @@ def determinant(matrix):
     else:
         det = 0
         for j in range(n):
-            minor = [row[:j] + row[j+1:] for row in matrix[1:]]
-            det = matrix[0][j] * determinant(minor)*((-1) ** j) + det
+            minor = [row[:j] + row[j + 1:] for row in matrix[1:]]
+            det = matrix[0][j] * determinant(minor) * ((-1) ** j) + det
         return det
 
 
-def _transpose(matrix):
+def _transpose(matrix: list) -> list:
     """
     Transposes a matrix.
 
@@ -214,7 +222,7 @@ def _transpose(matrix):
     return [[matrix[j][i] for j in range(len(matrix))] for i in range(len(matrix[0]))]
 
 
-def _cofactor_matrix(matrix):
+def _cofactor_matrix(matrix: list) -> list:
     """
     Calculates the cofactor matrix of a square matrix.
 
@@ -229,13 +237,13 @@ def _cofactor_matrix(matrix):
     for i in range(n):
         cofactor_row = []
         for j in range(n):
-            minor = [row[:j] + row[j+1:] for row in (matrix[:i] + matrix[i+1:])]
-            cofactor_row.append(determinant(minor) * ((-1) ** (i+j)))
+            minor = [row[:j] + row[j + 1:] for row in (matrix[:i] + matrix[i + 1:])]
+            cofactor_row.append(determinant(minor) * ((-1) ** (i + j)))
         cofactors.append(cofactor_row)
     return cofactors
 
 
-def _adjugate_matrix(matrix):
+def _adjugate_matrix(matrix: list) -> list:
     """
     Calculates the adjugate matrix of a square matrix.
 
@@ -248,7 +256,7 @@ def _adjugate_matrix(matrix):
     return _transpose(_cofactor_matrix(matrix))
 
 
-def invert_matrix(matrix):
+def invert_matrix(matrix: list) -> list:
     """
     Inverts a square matrix using the determinant and adjugate.
 
@@ -268,18 +276,27 @@ def invert_matrix(matrix):
     return inverse
 
 
-def find_all_dividers_of_field_size(num):
-        """
-        Find all the dividers of the size of the given number.
+def find_all_dividers_of_number(num: int) -> list:
+    """
+    Find all the dividers of the size of the given number.
 
-        Returns:
-            List[int]: sorted array with all the dividers of the given number
-        """
+    Args:
+        num (int): number to find the dividers of.
 
-        divisors = set()
-        for i in range(1, int(np.sqrt(num)) + 1):
-            if num % i == 0:
-                divisors.add(i)
-                divisors.add(num // i)
-        
-        return sorted(list(divisors)) 
+    Returns:
+        List[int]: sorted array with all the dividers of the given number
+
+    Example:
+
+        >>> find_all_dividers_of_number(12)
+        [1, 2, 3, 4, 6, 12]
+
+    """
+
+    divisors = set()
+    for i in range(1, int(np.sqrt(num)) + 1):
+        if num % i == 0:
+            divisors.add(i)
+            divisors.add(num // i)
+
+    return sorted(list(divisors))
