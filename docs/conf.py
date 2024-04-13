@@ -9,7 +9,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('..'))
-project = 'Galwa Fields'
+project = 'Galwa Field'
 copyright = '2024, Ido Nahum and Assaf Yossef'
 author = 'Ido Nahum and Assaf Yossef'
 release = '1.0.0'
@@ -52,7 +52,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'alabaster'
 html_static_path = ['_static']
 names_to_skip = ['inverse_matrix', '_adjugate_matrix', '_transpose', '_cofactor_matrix', 'determinant', 'pad_element',
-                 'valid_repr', 'zero_element_check', 'same_field', 'same_prime_field', 'refactor_polynom_terms', 'str_rep']
+                 'valid_repr', 'zero_element_check', 'same_field', 'same_prime_field', 'refactor_polynom_terms']
 
 
 def maybe_skip_member(app, what, name, obj, skip, options):

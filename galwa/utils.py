@@ -6,7 +6,7 @@ def bsgs(generator, element, group_order):
     """
     Baby-step Giant-step algorithm to solve the discrete logarithm problem.
 
-    ..math::
+    .. math::
         g^x = h
 
     Args:

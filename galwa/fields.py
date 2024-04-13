@@ -148,11 +148,11 @@ class FiniteField(object):
         >>> F = FiniteField(p, f)
         >>> F.elements_as_matrices()
         >>> F.elements
-
         [FiniteFieldElement(None, f(x) = [1 1 1] p=2),
          FiniteFieldElement([[1 0][0 1]], f(x) = [1 1 1] p=2),
          FiniteFieldElement([[0 1][1 1]], f(x) = [1 1 1] p=2),
          FiniteFieldElement([[1 1][1 0]], f(x) = [1 1 1] p=2)]
+
         """
         self.representation = "matrix"
 
@@ -355,8 +355,8 @@ class FiniteField(object):
 
         Where :math:`x^{i-1}` is the previous :math:`x^i` and :math:`x` is the basis vector.
 
-        So we start from :math:`x^n` and calculate :math:`x^(n+1)` using :math:`x^n` and :math:`x`, and so on until\
-         we reach :math:`x^(2n-2)`.
+        So we start from :math:`x^n` and calculate :math:`x^{n+1}` using :math:`x^n` and :math:`x`, and so on until\
+         we reach :math:`x^{2n-2}`.
 
         The multiplication of :math:`x^i` by :math:`x` can be seen as a shift of :math:`x^i` to the right,\
          so we shift :math:`x^i` to the right. Then we split the vector to a "valid" :math:`x^i` and\

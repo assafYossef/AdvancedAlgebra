@@ -74,7 +74,7 @@ We want to calculate each element easily or doing some arithmetic between elemen
 
 To do so we will embedd each element :math:`a \in l^x` in a matrix :math:`A \in GL_n(F_p)`.\
 
-Then any operation between elements will be done by matrix multiplication, addition, subtraction and inversion.\
+Then any operation between elements will be done by matrix multiplication, inversion.\
 
 To embedd the element we will use our basis and define a linear transformation :math:`\phi_{a}` from :math:`l^x` to :math:`l^x`, by :math:`\phi_{a}(k) = ak` for all :math:`k \in l^x`.
 
@@ -123,7 +123,7 @@ PrimeFieldElement
 ~~~~~~~~~~~~~~~~~
 We implemented the class PrimeFieldElement that represents an element in a prime field :math:`F_p`.\
 
-The class gets as an input the element :math:`a` and the prime number :math:`p`.\
+The class gets as an input an integer :math:`a` and the prime number :math:`p`.\
 
 Example:
 
@@ -229,24 +229,24 @@ Some other properties and methods.
     >>> F.order # p=2 f(x) is degree 2, so 2^2 = 4
     4
 
-The order includes the zero element.
+    The order includes the zero element.
 
 2. Getting the generators of the multiplicative group of the field:
 
-We know that generator element is an element whose powers generate all the elements in the field.
+    We know that generator element is an element whose powers generate all the elements in the field.
 
-:math:`l^x = \{a^i | 0 <= i < |l^x|\}`
+    :math:`l^x = \{a^i | 0 <= i < |l^x|\}`
 
-So to get all generators in the field
+    So to get all generators in the field
 
         >>> F.generators
         [FiniteFieldElement(x, f(x)= 1 + x + x², p=2), FiniteFieldElement(1 + x, f(x)= 1 + x + x², p=2)]
 
-What happens in the background is that we check the order of each element in the field, if the order is equal to the order of the multiplicative group then it is a generator.
+    What happens in the background is that we check the order of each element in the field, if the order is equal to the order of the multiplicative group then it is a generator.
 
 3. Getting a specific element:
 
-You can give a vector represents an element in the field, and the function will return the element.
+    You can give a vector represents an element in the field, and the function will return the element.
 
         >>> F.get_element(np.array[1, 0])
         FiniteFieldElement(1, f(x)= 1 + x + x², p=2)
@@ -335,21 +335,21 @@ Other methods and properties:
     >>> a.multiplicative_order()
     7
 
-From lagrange theorem we know that for :math:`H` as subgroup of :math:`G` then the order of any element in :math:`G` divides the order of :math:`G`.\
+    From lagrange theorem we know that for :math:`H` as subgroup of :math:`G` then the order of any element in :math:`G` divides the order of :math:`G`.\
 
-That is true for all :math:`g \in G , |<g>| | |G|`
+    That is true for all :math:`g \in G , |<g>| | |G|`
 
-In our case the multiplicative group of :math:`F_{p}^x = F_{p} - \{0\}` is a subgroup of the multiplicative group :math:`l^x`.
+    In our case the multiplicative group of :math:`F_{p}^x = F_{p} - \{0\}` is a subgroup of the multiplicative group :math:`l^x`.
 
-So for  all :math:`a \in l^x, O(a) | O(l^x)`.
+    So for  all :math:`a \in l^x, O(a) | O(l^x)`.
 
-So first, we calculate all divisors of the order of the multiplicative group of the field, the complexity of this operation is :math:`O(\sqrt{n})`\ where :math:`n` is the order of the multiplicative group.
+    So first, we calculate all divisors of the order of the multiplicative group of the field, the complexity of this operation is :math:`O(\sqrt{n})`\ where :math:`n` is the order of the multiplicative group.
 
-The divisors array will be sorted, we will start from the smallest and calculate :math:`a^{d}` for each divisor :math:`d` and check if the result is the identity element.
+    The divisors array will be sorted, we will start from the smallest and calculate :math:`a^{d}` for each divisor :math:`d` and check if the result is the identity element.
 
-Calculating :math:`a^{d}` can be done using exponentiation by squaring algorithm, the complexity of this operation is :math:`O(\log(d))`.
+    Calculating :math:`a^{d}` can be done using exponentiation by squaring algorithm, the complexity of this operation is :math:`O(\log(d))`.
 
-So the complexity in the best case will be :math:`O(\log(d)` and in the worst case :math:`O(k\log(d))` where :math:`k` is the number of divisors.
+    So the complexity in the best case will be :math:`O(\log(d))` and in the worst case :math:`O(k\log(d))` where :math:`k` is the number of divisors.
 
 
 2. Checking if the element is a generator:
