@@ -1,7 +1,7 @@
 from alive_progress import alive_bar
 
-from tests.PrimeFieldTests import PrimeFieldTests
-from tests.FiniteFieldTests import FiniteFieldTests
+from PrimeFieldTests import PrimeFieldTests
+from FiniteFieldTests import FiniteFieldTests
 
 # This file will contain all the tests for the classes
 
@@ -34,4 +34,8 @@ def run_all_tests():
     p = FiniteFieldTests()
     public_method_names = [method for method in dir(p) if callable(getattr(p, method)) if method.startswith('test')]
     generic_run(public_method_names, p)
+
+
+if __name__ == "__main__":
+    run_all_tests()
 

@@ -191,7 +191,12 @@ class FiniteFieldTests:
                     break
 
                 if gf_element2 == gf(0):
-                    continue
+                    try:
+                        x = element1 / element2
+                    except Exception as e:
+                        assert type(e) == ValueError
+                        assert e.args[0] == "Zero is not part of the multiplicative group, so it cannot be used in this operation"
+                        continue
 
                 gf_element1.multiplicative_order()
                 
@@ -216,7 +221,12 @@ class FiniteFieldTests:
 
             # skip on the zero and element
             if gf_element == gf(0):
-                continue
+                try:
+                    x = element ** -1
+                except Exception as e:
+                    assert type(e) == ValueError
+                    assert e.args[0] == "Zero element doesn't have inverse"
+                    continue
 
             assert gf_element ** -1 == gf(str_rep((element ** -1).a))
     
@@ -319,3 +329,53 @@ class FiniteFieldTests:
             except ValueError:
                 x = gf_element.log(g_gf)
                 assert g_gf ** x != gf_element
+
+    def test_operations_on_elemetns_different_fields(self):
+        p1 = 7
+        poly1 = [3, 6, 1]
+
+        l1 = FiniteField(p=p1, f=np.array(poly1))
+        
+        p2 = 5
+        poly2 = [2, 4, 1]
+
+        l2 = FiniteField(p=p2, f=np.array(poly2))
+
+        for element1 in l1.elements:
+            for element2 in l2.elements:
+                
+                # dont do check on zero element
+                if np.all(element2.a == 0):
+                    continue
+
+                # try sum
+                try:
+                    x = element1 + element2
+                except Exception as e:
+                    assert type(e) == ValueError
+                    assert e.args[0] == "Operands must belong to the same field"
+                
+                # try sub
+                try:
+                    x = element1 - element2
+                except Exception as e:
+                    assert type(e) == ValueError
+                    assert e.args[0] == "Operands must belong to the same field"
+                
+                # try mul
+                try:
+                    x = element1 * element2
+                except Exception as e:
+                    assert type(e) == ValueError
+                    assert e.args[0] == "Operands must belong to the same field"
+                
+                # try truediv
+                try:
+                    x = element1 / element2
+                except Exception as e:
+                    assert type(e) == ValueError
+                    assert e.args[0] == "Operands must belong to the same field"
+                
+                break
+
+

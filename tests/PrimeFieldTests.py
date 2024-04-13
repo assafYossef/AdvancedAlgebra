@@ -166,14 +166,3 @@ class PrimeFieldTests:
         zero = PrimeFieldElement(0, p)
 
         assert zero.inverse == None
-
-
-    # def test_positive_pow():
-    #     p = 11
-
-    #     gf = galois.GF(p)
-
-    #     x = PrimeFieldElement(3, p)
-
-    #     assert x ** 3 == int(gf(x.a) ** 3)
-    #     assert x ** 80 == int(gf(x.a) ** 80)

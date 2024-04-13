@@ -563,6 +563,11 @@ class FiniteFieldElement(object):
         Returns:
             FiniteFieldElement: the inverse of the element
         """
+
+        # raise error for the 0 element
+        if np.all(self.a == 0):
+            raise ValueError("Zero element doesn't have inverse")
+
         gln_a_list = [[PrimeFieldElement(value, self.field.p) for value in row] for row in self.gln_a]
         inverse_a = np.array(invert_matrix(gln_a_list))[:,0]
         inverse_a = np.array([element.a for element in inverse_a])
