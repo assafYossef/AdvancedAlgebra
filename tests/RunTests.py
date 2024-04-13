@@ -20,13 +20,15 @@ def generic_run(public_method_names, p):
                 print(str(e) + " on Test: " + method)
 
     print(f"{len(public_method_names) - len(failed_tests)} Succeed, {len(failed_tests)} Failed")
-    if (len(failed_tests) > 0):
+    if len(failed_tests) > 0:
         print("The tests that failed are:")
         print(failed_tests)
 
 
-
 def run_all_tests():
+    """
+    Run all tests for PrimeFieldElement, FiniteFieldElement and FiniteField classes.
+    """
     p = PrimeFieldTests(p = 11)
     public_method_names = [method for method in dir(p) if callable(getattr(p, method)) if method.startswith('test')]
     generic_run(public_method_names, p)

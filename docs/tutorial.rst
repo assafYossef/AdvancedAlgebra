@@ -440,8 +440,9 @@ Code Example:
     10
 
 
+
 Tests for the project
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 We created several tests for our project. \
 
@@ -449,15 +450,13 @@ We split the tests into two: \
 
 The first tests are for the 'PrimeFieldElement' class, and it should test all the functionality of this class according to what we had to implement in this project. \
 
-The second tests are for the rest of the project and mosly for the 'FiniteField' and 'FiniteFieldElement' classes. \
+The second tests are for the rest of the project and mostly for the 'FiniteField' and 'FiniteFieldElement' classes. \
 
-In order to implement this tests and to check the correctness of our results we used 'galois' library, which is a library in python that can do all the arithmetic in prime fields and extendion fileds. \
+In order to implement this tests and to check the correctness of our results we used 'galois' library, which is a library in python that can do all the arithmetic in prime fields and extension fields. \
 
-In order to run our tests make sure first that you installed our project as package (you can see how to do it at the beggining of this chapter). 
+In order to run our tests make sure first that you installed our project as package
 
-Then make sure you have all the dependencies inside 'requirements.txt' file. If you are not sure then open a terminal in the project folder and write the following command:
-
-    >>> pip insatll -r requirements.txt
+    >>> pip install .
 
 Now, you should have all the dependencies in order to run our tests.
 
@@ -466,36 +465,19 @@ To run our tests open terminal inside 'tests' folder and type the following comm
     >>> python RunTests.py
 
 
-The tests that we implemented for 'PrimeFieldElement' are: \
 
-* test_find_legal_inverse
-* test_illegal_inverse
-* test_mul_members_different_fields
-* test_mul_members_in_field
-* test_divide_members_different_fields
-* test_divide_members_in_field
-* test_sub_members_different_fields
-* test_sub_members_in_field
-* test_sum_members_different_fields
-* test_sum_members_in_field
+Prime Field Element tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. automodule:: tests.PrimeFieldTests
+   :members:
+   :undoc-members:
 
-The tests that we implemented for the rest of the project are: \
+Finite Field and Finite Field Element tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* test_bsgs
-* test_divide_elements_in_field
-* test_elements_in_field_easy
-* test_elements_in_field_hard
-* test_elements_in_field_hell
-* test_elements_in_field_medium
-* test_generators
-* test_inverse
-* test_mul_elements_in_field
-* test_operations_on_elemetns_different_fields - like addition, subtraction, multiplication and division.
-* test_order_of_elements
-* test_pow
-* test_sub_elements_in_field
-* test_sum_elements_in_field
-
+.. automodule:: tests.FiniteFieldTests
+   :members:
+   :undoc-members:
 
 
